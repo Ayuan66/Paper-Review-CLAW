@@ -49,6 +49,7 @@
     "titleCount": "リアルタイム進捗（{{count}}件）",
     "waitUpload": "論文をアップロードして「査読開始」をクリックしてください",
     "waitStart": "タスク開始を待機中...",
+    "running": "実行中",
     "phases": {
       "preparing": "準備中",
       "reviewing": "査読中",
@@ -84,6 +85,7 @@
     "noDiscussions": "ディスカッション記録なし",
     "noContent": "コンテンツなし",
     "downloadBtn": "Markdownをダウンロード",
+    "downloadZipBtn": "全てダウンロード (ZIP)",
     "roundLabel": "第{{round}}ラウンド"
   },
   "errors": {

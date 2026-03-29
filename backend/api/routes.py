@@ -256,6 +256,78 @@ def download_result(session_id: str):
 
 
 # ---------------------------------------------------------------------------
+# Download ZIP package (all review outputs + original PDF)
+# ---------------------------------------------------------------------------
+@api_bp.route("/sessions/<session_id>/download/zip")
+def download_zip(session_id: str):
+    import io
+    import zipfile
+
+    try:
+        session = ReviewSession.load(session_id)
+    except FileNotFoundError:
+        return jsonify({"error": "会话不存在"}), 404
+
+    if session.status != "complete":
+        return jsonify({"error": "评审尚未完成，无法下载"}), 400
+
+    buf = io.BytesIO()
+    with zipfile.ZipFile(buf, mode="w", compression=zipfile.ZIP_DEFLATED) as zf:
+        # Original PDF
+        if os.path.exists(session.pdf_path):
+            with open(session.pdf_path, "rb") as f:
+                zf.writestr(session.pdf_filename, f.read())
+
+        # Individual reviewer reports
+        for review in session.reviews or []:
+            agent = review.get("agent_name", "reviewer")
+            model = review.get("model", "")
+            content = review.get("content", "")
+            md = f"# {agent} Review\n\n**Model**: `{model}`\n\n---\n\n{content}"
+            zf.writestr(f"{agent}_review.md", md.encode("utf-8"))
+
+        # Editor summary
+        if session.editor_summary:
+            md = f"# Editor Summary\n\n{session.editor_summary}"
+            zf.writestr("editor_summary.md", md.encode("utf-8"))
+
+        # Author discussions
+        if session.author_discussions:
+            lines = ["# Author Discussions\n"]
+            for d in session.author_discussions:
+                author = d.get("author", "")
+                round_num = d.get("round", "")
+                content = d.get("content", "")
+                lines.append(f"## Round {round_num} — {author}\n\n{content}\n")
+            zf.writestr("author_discussions.md", "\n".join(lines).encode("utf-8"))
+
+        # Final revision report
+        if session.final_markdown:
+            zf.writestr("revision_report.md", session.final_markdown.encode("utf-8"))
+
+        # Metadata JSON
+        metadata = {
+            "session_id": session.session_id,
+            "pdf_filename": session.pdf_filename,
+            "created_at": session.created_at,
+            "agent_config": session.agent_config,
+            "status": session.status,
+        }
+        zf.writestr(
+            "review_metadata.json",
+            json.dumps(metadata, ensure_ascii=False, indent=2).encode("utf-8"),
+        )
+
+    buf.seek(0)
+    return send_file(
+        buf,
+        mimetype="application/zip",
+        as_attachment=True,
+        download_name=f"review_package_{session_id[:8]}.zip",
+    )
+
+
+# ---------------------------------------------------------------------------
 # Get available models
 # ---------------------------------------------------------------------------
 @api_bp.route("/models")

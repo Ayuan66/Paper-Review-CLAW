@@ -49,6 +49,7 @@
     "titleCount": "实时进度（{{count}} 条）",
     "waitUpload": "请先上传论文并点击「开始评审」",
     "waitStart": "等待任务启动...",
+    "running": "运行中",
     "phases": {
       "preparing": "准备阶段",
       "reviewing": "审稿阶段",
@@ -84,6 +85,7 @@
     "noDiscussions": "暂无讨论记录",
     "noContent": "暂无内容",
     "downloadBtn": "下载 Markdown",
+    "downloadZipBtn": "下载全部 (ZIP)",
     "roundLabel": "第{{round}}轮"
   },
   "errors": {

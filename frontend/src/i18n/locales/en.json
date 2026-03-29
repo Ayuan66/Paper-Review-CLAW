@@ -49,6 +49,7 @@
     "titleCount": "Live Progress ({{count}})",
     "waitUpload": "Upload a paper and click \"Start Review\"",
     "waitStart": "Waiting for task to start...",
+    "running": "Running",
     "phases": {
       "preparing": "Preparing",
       "reviewing": "Reviewing",
@@ -84,6 +85,7 @@
     "noDiscussions": "No discussion records yet",
     "noContent": "No content",
     "downloadBtn": "Download Markdown",
+    "downloadZipBtn": "Download All (ZIP)",
     "roundLabel": "Round {{round}}"
   },
   "errors": {
