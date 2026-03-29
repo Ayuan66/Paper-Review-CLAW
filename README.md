@@ -1,15 +1,17 @@
-# Paper Review Claw
+# Paper Review CLAW
 
-## 配置
+## Configuration
 
-1. 安装运行环境：
+### Local setup
+
+1. Install the required runtimes:
 
 ```bash
-# Python 3.11+（建议）
-# Node.js 18+（建议）
+# Python 3.11+ recommended
+# Node.js 18+ recommended
 ```
 
-2. 安装后端依赖：
+2. Install backend dependencies:
 
 ```bash
 cd backend
@@ -18,14 +20,14 @@ source .venv/bin/activate
 pip install -r requirements.txt
 ```
 
-3. 配置后端环境变量：
+3. Create the backend environment file:
 
 ```bash
 cd backend
 cp .env.example .env
 ```
 
-然后编辑 `backend/.env`，至少需要填写：
+4. Edit `backend/.env` and set at least:
 
 ```env
 OPENROUTER_API_KEY=your_openrouter_api_key_here
@@ -33,16 +35,28 @@ FLASK_DEBUG=true
 MAX_AUTHOR_ITERATIONS=5
 ```
 
-4. 安装前端依赖：
+5. Install frontend dependencies:
 
 ```bash
 cd frontend
 npm install
 ```
 
-## 运行
+### Docker setup
 
-1. 启动后端服务（默认端口 `6000`）：
+For Docker-based usage, you only need to prepare:
+
+```bash
+cp backend/.env.example backend/.env
+```
+
+Then update `backend/.env` with your real `OPENROUTER_API_KEY`.
+
+## Run
+
+### Run locally
+
+Start the backend on port `6000`:
 
 ```bash
 cd backend
@@ -50,17 +64,46 @@ source .venv/bin/activate
 python app.py
 ```
 
-2. 启动前端开发服务（默认端口 `3000`）：
+Start the frontend on port `3000`:
 
 ```bash
 cd frontend
 npm run dev
 ```
 
-3. 打开浏览器访问：
+Open:
 
 ```text
 http://localhost:3000
 ```
 
-前端会通过 Vite 代理将 `/api` 请求转发到 `http://localhost:6000`，因此本地开发时只需要同时启动前后端即可。
+The Vite dev server proxies `/api` requests to `http://localhost:6000`.
+
+### Run with Docker Compose
+
+Build the images:
+
+```bash
+docker compose build
+```
+
+This creates:
+
+```text
+paper-review-claw-backend:latest
+paper-review-claw-frontend:latest
+```
+
+Then start both services:
+
+```bash
+docker compose up
+```
+
+Then open:
+
+```text
+http://localhost:3000
+```
+
+The frontend container serves the built app with Nginx and proxies `/api` requests to the backend container.

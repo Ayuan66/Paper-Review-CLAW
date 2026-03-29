@@ -1,0 +1,32 @@
+services:
+  backend:
+    image: paper-review-claw-backend:latest
+    build:
+      context: ./backend
+    env_file:
+      - ./backend/.env
+    ports:
+      - "6000:6000"
+    volumes:
+      - backend_storage:/app/storage
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:6000/health').read()"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 15s
+    restart: unless-stopped
+
+  frontend:
+    image: paper-review-claw-frontend:latest
+    build:
+      context: ./frontend
+    ports:
+      - "3000:80"
+    depends_on:
+      backend:
+        condition: service_healthy
+    restart: unless-stopped
+
+volumes:
+  backend_storage:

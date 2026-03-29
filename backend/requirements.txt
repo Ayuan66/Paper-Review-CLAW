@@ -3,3 +3,4 @@ flask-cors==5.*
 langgraph==0.4.*
 httpx==0.28.*
 python-dotenv==1.*
+PyMuPDF==1.26.*
