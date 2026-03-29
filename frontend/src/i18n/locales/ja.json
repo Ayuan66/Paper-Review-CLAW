@@ -1,0 +1,95 @@
+{
+  "page": {
+    "title": "Paper Review CLAW",
+    "subtitle": "マルチエージェントAI論文査読システム",
+    "steps": {
+      "upload": "論文アップロード",
+      "configure": "エージェント設定",
+      "review": "査読実行",
+      "results": "結果確認"
+    },
+    "startButton": "査読開始",
+    "startingButton": "査読中...",
+    "restartButton": "再査読",
+    "cancelButton": "査読をキャンセル",
+    "resetButton": "リセット",
+    "cancelConfirmTitle": "キャンセルしますか？",
+    "cancelConfirmDesc": "実行中のエージェントは中断されます。完了済みの結果は保持されます。",
+    "cancelConfirmOk": "キャンセルを確認",
+    "cancelConfirmCancel": "待機を続ける",
+    "sessionId": "アップロード済み、セッションID：{{id}}…",
+    "noSession": "先にPDFをアップロードしてください"
+  },
+  "upload": {
+    "title": "論文アップロード",
+    "dragText": "クリックまたはドラッグしてPDFをアップロード",
+    "supportText": "PDFのみ対応、最大50MB",
+    "successMsg": "「{{filename}}」のアップロードに成功しました",
+    "onlyPdf": "PDFファイルのみサポートしています",
+    "tooLarge": "ファイルサイズは50MB以下にしてください",
+    "uploadFailed": "アップロードに失敗しました"
+  },
+  "agentConfig": {
+    "title": "エージェントモデル設定",
+    "maxIterations": "著者議論の最大ラウンド数",
+    "selectModel": "モデルを選択"
+  },
+  "venue": {
+    "title": "投稿先Venue",
+    "placeholder": "会議・ジャーナルを選択（任意）",
+    "generic": "汎用査読（Venue未指定）",
+    "conference": "国際会議",
+    "journal": "学術誌",
+    "hint": "選択後、エージェントはvenueの公式サイトから投稿要件を取得し、査読基準を調整します。",
+    "selectedHint": "査読者は {{id}} の投稿基準に従って査読します",
+    "noVenueHint": "Venue未選択時は汎用査読基準を使用します"
+  },
+  "progress": {
+    "title": "リアルタイム進捗",
+    "titleCount": "リアルタイム進捗（{{count}}件）",
+    "waitUpload": "論文をアップロードして「査読開始」をクリックしてください",
+    "waitStart": "タスク開始を待機中...",
+    "phases": {
+      "preparing": "準備中",
+      "reviewing": "査読中",
+      "editing": "編集者まとめ",
+      "discussing": "著者ディスカッション",
+      "finalizing": "レポート生成",
+      "complete": "完了",
+      "error": "エラー"
+    },
+    "agents": {
+      "prepare": "Venue情報取得",
+      "reviewer_1": "査読者 1",
+      "reviewer_2": "査読者 2",
+      "reviewer_3": "査読者 3",
+      "editor": "編集者",
+      "author_a": "著者 A",
+      "author_b": "著者 B",
+      "finalize": "レポート確定",
+      "system": "システム"
+    }
+  },
+  "results": {
+    "title": "査読結果",
+    "noResults": "査読完了後、結果がここに表示されます",
+    "paperLabel": "論文：{{filename}}",
+    "errorDetail": "エラー詳細",
+    "viewOutput": "出力を見る",
+    "tabs": {
+      "editorSummary": "編集者まとめ",
+      "discussions": "著者ディスカッション（{{count}}件）",
+      "finalReport": "最終修正レポート"
+    },
+    "noDiscussions": "ディスカッション記録なし",
+    "noContent": "コンテンツなし",
+    "downloadBtn": "Markdownをダウンロード",
+    "roundLabel": "第{{round}}ラウンド"
+  },
+  "errors": {
+    "startFailed": "起動に失敗しました",
+    "connectionLost": "接続が切断されました：{{msg}}",
+    "fetchResultsFailed": "結果の取得に失敗しました",
+    "cancelledByUser": "ユーザーによりキャンセルされました"
+  }
+}

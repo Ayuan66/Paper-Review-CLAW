@@ -1,0 +1,95 @@
+{
+  "page": {
+    "title": "Paper Review CLAW",
+    "subtitle": "多Agent AI论文评审与修改系统",
+    "steps": {
+      "upload": "上传论文",
+      "configure": "配置 Agents",
+      "review": "进行评审",
+      "results": "查看结果"
+    },
+    "startButton": "开始评审",
+    "startingButton": "评审进行中...",
+    "restartButton": "重新评审",
+    "cancelButton": "取消评审",
+    "resetButton": "重置",
+    "cancelConfirmTitle": "确认取消？",
+    "cancelConfirmDesc": "当前正在运行的 Agent 会被中断，已完成的结果将保留。",
+    "cancelConfirmOk": "确认取消",
+    "cancelConfirmCancel": "继续等待",
+    "sessionId": "已上传，会话ID：{{id}}…",
+    "noSession": "请先上传论文 PDF"
+  },
+  "upload": {
+    "title": "上传论文",
+    "dragText": "点击或拖拽上传论文 PDF",
+    "supportText": "支持 PDF 格式，最大 50MB",
+    "successMsg": "《{{filename}}》上传成功",
+    "onlyPdf": "只支持 PDF 文件",
+    "tooLarge": "文件大小不能超过 50MB",
+    "uploadFailed": "上传失败"
+  },
+  "agentConfig": {
+    "title": "Agent 模型配置",
+    "maxIterations": "作者最大讨论轮数",
+    "selectModel": "选择模型"
+  },
+  "venue": {
+    "title": "目标投稿Venue",
+    "placeholder": "选择目标会议或期刊（可选）",
+    "generic": "通用审稿（不指定venue）",
+    "conference": "会议",
+    "journal": "期刊",
+    "hint": "选择后，Agent 会先爬取该venue官网获取投稿要求，并据此调整审稿标准",
+    "selectedHint": "审稿人将参考 {{id}} 的投稿要求进行评审",
+    "noVenueHint": "未选择venue时使用通用审稿标准"
+  },
+  "progress": {
+    "title": "实时进度",
+    "titleCount": "实时进度（{{count}} 条）",
+    "waitUpload": "请先上传论文并点击「开始评审」",
+    "waitStart": "等待任务启动...",
+    "phases": {
+      "preparing": "准备阶段",
+      "reviewing": "审稿阶段",
+      "editing": "编辑汇总",
+      "discussing": "作者讨论",
+      "finalizing": "生成报告",
+      "complete": "已完成",
+      "error": "出错"
+    },
+    "agents": {
+      "prepare": "获取Venue要求",
+      "reviewer_1": "审稿人 1",
+      "reviewer_2": "审稿人 2",
+      "reviewer_3": "审稿人 3",
+      "editor": "编辑",
+      "author_a": "作者 A",
+      "author_b": "作者 B",
+      "finalize": "报告生成",
+      "system": "系统"
+    }
+  },
+  "results": {
+    "title": "评审结果",
+    "noResults": "评审完成后结果将在此显示",
+    "paperLabel": "论文：{{filename}}",
+    "errorDetail": "错误详情",
+    "viewOutput": "查看输出",
+    "tabs": {
+      "editorSummary": "编辑汇总",
+      "discussions": "作者讨论（{{count}}条）",
+      "finalReport": "最终修改报告"
+    },
+    "noDiscussions": "暂无讨论记录",
+    "noContent": "暂无内容",
+    "downloadBtn": "下载 Markdown",
+    "roundLabel": "第{{round}}轮"
+  },
+  "errors": {
+    "startFailed": "启动失败",
+    "connectionLost": "连接中断：{{msg}}",
+    "fetchResultsFailed": "获取结果失败",
+    "cancelledByUser": "已手动取消"
+  }
+}

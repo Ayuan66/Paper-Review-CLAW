@@ -1,0 +1,95 @@
+{
+  "page": {
+    "title": "Paper Review CLAW",
+    "subtitle": "Multi-Agent AI Paper Review System",
+    "steps": {
+      "upload": "Upload Paper",
+      "configure": "Configure Agents",
+      "review": "Review",
+      "results": "View Results"
+    },
+    "startButton": "Start Review",
+    "startingButton": "Reviewing...",
+    "restartButton": "Review Again",
+    "cancelButton": "Cancel Review",
+    "resetButton": "Reset",
+    "cancelConfirmTitle": "Confirm Cancel?",
+    "cancelConfirmDesc": "Running agents will be interrupted. Completed results will be preserved.",
+    "cancelConfirmOk": "Confirm Cancel",
+    "cancelConfirmCancel": "Keep Waiting",
+    "sessionId": "Uploaded, session: {{id}}…",
+    "noSession": "Please upload a PDF first"
+  },
+  "upload": {
+    "title": "Upload Paper",
+    "dragText": "Click or drag PDF here to upload",
+    "supportText": "PDF format only, max 50MB",
+    "successMsg": "\"{{filename}}\" uploaded successfully",
+    "onlyPdf": "Only PDF files are supported",
+    "tooLarge": "File size must not exceed 50MB",
+    "uploadFailed": "Upload failed"
+  },
+  "agentConfig": {
+    "title": "Agent Model Configuration",
+    "maxIterations": "Max Author Discussion Rounds",
+    "selectModel": "Select model"
+  },
+  "venue": {
+    "title": "Target Venue",
+    "placeholder": "Select a conference or journal (optional)",
+    "generic": "Generic review (no specific venue)",
+    "conference": "Conference",
+    "journal": "Journal",
+    "hint": "After selection, the agent will fetch submission requirements from the venue's website and adjust the review criteria accordingly.",
+    "selectedHint": "Reviewers will follow {{id}} submission guidelines",
+    "noVenueHint": "Generic review criteria will be used when no venue is selected"
+  },
+  "progress": {
+    "title": "Live Progress",
+    "titleCount": "Live Progress ({{count}})",
+    "waitUpload": "Upload a paper and click \"Start Review\"",
+    "waitStart": "Waiting for task to start...",
+    "phases": {
+      "preparing": "Preparing",
+      "reviewing": "Reviewing",
+      "editing": "Editor Summary",
+      "discussing": "Author Discussion",
+      "finalizing": "Generating Report",
+      "complete": "Complete",
+      "error": "Error"
+    },
+    "agents": {
+      "prepare": "Fetch Venue Info",
+      "reviewer_1": "Reviewer 1",
+      "reviewer_2": "Reviewer 2",
+      "reviewer_3": "Reviewer 3",
+      "editor": "Editor",
+      "author_a": "Author A",
+      "author_b": "Author B",
+      "finalize": "Finalize Report",
+      "system": "System"
+    }
+  },
+  "results": {
+    "title": "Review Results",
+    "noResults": "Results will appear here after the review is complete",
+    "paperLabel": "Paper: {{filename}}",
+    "errorDetail": "Error Details",
+    "viewOutput": "View Output",
+    "tabs": {
+      "editorSummary": "Editor Summary",
+      "discussions": "Author Discussions ({{count}})",
+      "finalReport": "Final Revision Report"
+    },
+    "noDiscussions": "No discussion records yet",
+    "noContent": "No content",
+    "downloadBtn": "Download Markdown",
+    "roundLabel": "Round {{round}}"
+  },
+  "errors": {
+    "startFailed": "Failed to start",
+    "connectionLost": "Connection lost: {{msg}}",
+    "fetchResultsFailed": "Failed to fetch results",
+    "cancelledByUser": "Cancelled by user"
+  }
+}
