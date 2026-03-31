@@ -114,7 +114,24 @@
       "subtitle": "Multi-Agent AI Research Idea Discussion System",
       "complete": "Discussion complete",
       "fetchResultsFailed": "Failed to fetch results",
-      "connectionLost": "Connection lost: {{msg}}"
+      "connectionLost": "Connection lost: {{msg}}",
+      "statusRunning": "Round {{round}} in progress",
+      "statusRevision": "Awaiting revision",
+      "statusComplete": "Discussion complete",
+      "cancelButton": "Cancel Discussion",
+      "cancelConfirmTitle": "Confirm Cancel?",
+      "cancelConfirmDesc": "The current discussion will be interrupted. Completed content will be preserved.",
+      "cancelConfirmOk": "Confirm Cancel",
+      "cancelConfirmCancel": "Keep Waiting",
+      "restart": "Restart",
+      "resetButton": "Reset",
+      "cancelledByUser": "Cancelled by user"
+    },
+    "steps": {
+      "input": "Input Question",
+      "discussing": "Multi-Agent Discussion",
+      "revision": "Revise Idea",
+      "complete": "Complete"
     },
     "input": {
       "title": "Research Question Input",
@@ -141,12 +158,17 @@
       "empty": "Agent analysis and discussion will appear here in real time",
       "roundStart": "Round {{round}} started",
       "roundComplete": "Round {{round}} complete — waiting for revision…",
-      "agentQuestion": "(Agent question)"
+      "agentQuestion": "(Agent question)",
+      "tagQuestion": "Question",
+      "tagStart": "Started",
+      "running": "Running",
+      "waitingRevision": "Awaiting Revision"
     },
     "question": {
-      "title": "{{agent}} asks you",
+      "title": "Agent Question",
       "answerPlaceholder": "Type your answer…",
-      "submit": "Submit Answer"
+      "submit": "Submit Answer",
+      "ctrlEnterHint": "Ctrl + Enter to submit quickly"
     },
     "revision": {
       "title": "Round {{round}} Summary — Please revise your idea",
@@ -154,7 +176,8 @@
       "questionLabel": "Research Question",
       "contextLabel": "Background",
       "continue": "Continue to Next Round",
-      "finish": "End Discussion"
+      "finish": "End Discussion",
+      "roundProgress": "Round {{current}} / {{max}}"
     }
   }
 }

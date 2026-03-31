@@ -33,7 +33,12 @@ export default function App() {
         <Tabs
           defaultActiveKey="review"
           size="large"
-          style={{ padding: "0 16px" }}
+          tabBarStyle={{
+            paddingInline: 24,
+            marginBottom: 0,
+            background: "#fff",
+            borderBottom: "1px solid #f0f0f0",
+          }}
           items={[
             {
               key: "review",

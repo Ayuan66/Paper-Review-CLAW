@@ -1,5 +1,4 @@
 import {
-  Button,
   Card,
   Col,
   Form,
@@ -15,7 +14,7 @@ import { getModels } from "../../api/client";
 import { useIdeaStore } from "../../store/ideaStore";
 import type { ModelOption } from "../../types";
 
-const { Title, Text } = Typography;
+const { Title } = Typography;
 const { TextArea } = Input;
 
 const IDEA_ROLE_KEYS = [
@@ -25,11 +24,7 @@ const IDEA_ROLE_KEYS = [
   "summarizer",
 ];
 
-interface Props {
-  onStart: () => void;
-}
-
-export default function IdeaInput({ onStart }: Props) {
+export default function IdeaInput() {
   const { t } = useTranslation();
   const {
     researchQuestion,
@@ -66,10 +61,7 @@ export default function IdeaInput({ onStart }: Props) {
       }
     >
       <Form layout="vertical" size="small">
-        <Form.Item
-          label={<Text strong>{t("idea.input.questionLabel")}</Text>}
-          required
-        >
+        <Form.Item label={t("idea.input.questionLabel")} required>
           <TextArea
             rows={3}
             disabled={disabled}
@@ -79,7 +71,7 @@ export default function IdeaInput({ onStart }: Props) {
           />
         </Form.Item>
 
-        <Form.Item label={<Text strong>{t("idea.input.contextLabel")}</Text>}>
+        <Form.Item label={t("idea.input.contextLabel")}>
           <TextArea
             rows={3}
             disabled={disabled}
@@ -89,7 +81,7 @@ export default function IdeaInput({ onStart }: Props) {
           />
         </Form.Item>
 
-        <Form.Item label={<Text strong>{t("idea.input.maxRounds")}</Text>}>
+        <Form.Item label={t("idea.input.maxRounds")}>
           <InputNumber
             min={1}
             max={5}
@@ -98,10 +90,12 @@ export default function IdeaInput({ onStart }: Props) {
             onChange={(v) => setMaxRounds(v ?? 3)}
           />
         </Form.Item>
+      </Form>
 
-        <Title level={5} style={{ marginTop: 8 }}>
-          {t("idea.input.agentConfig")}
-        </Title>
+      <Title level={5} style={{ marginTop: 4, marginBottom: 8 }}>
+        {t("idea.input.agentConfig")}
+      </Title>
+      <Form layout="vertical" size="small">
         <Row gutter={[12, 0]}>
           {IDEA_ROLE_KEYS.map((role) => (
             <Col span={12} key={role}>
@@ -126,16 +120,6 @@ export default function IdeaInput({ onStart }: Props) {
             </Col>
           ))}
         </Row>
-
-        <Button
-          type="primary"
-          block
-          disabled={disabled || !researchQuestion.trim()}
-          onClick={onStart}
-          style={{ marginTop: 8 }}
-        >
-          {disabled ? t("idea.input.starting") : t("idea.input.start")}
-        </Button>
       </Form>
     </Card>
   );

@@ -114,7 +114,24 @@
       "subtitle": "マルチエージェントAI研究アイデア議論システム",
       "complete": "議論が完了しました",
       "fetchResultsFailed": "結果の取得に失敗しました",
-      "connectionLost": "接続が切断されました：{{msg}}"
+      "connectionLost": "接続が切断されました：{{msg}}",
+      "statusRunning": "第 {{round}} ラウンド議論中",
+      "statusRevision": "修正を待機中",
+      "statusComplete": "議論完了",
+      "cancelButton": "議論をキャンセル",
+      "cancelConfirmTitle": "キャンセルしますか？",
+      "cancelConfirmDesc": "現在の議論は中断されます。完了済みのコンテンツは保持されます。",
+      "cancelConfirmOk": "キャンセルを確認",
+      "cancelConfirmCancel": "待機を続ける",
+      "restart": "最初からやり直す",
+      "resetButton": "リセット",
+      "cancelledByUser": "ユーザーによりキャンセルされました"
+    },
+    "steps": {
+      "input": "課題を入力",
+      "discussing": "マルチエージェント議論",
+      "revision": "アイデアを修正",
+      "complete": "完了"
     },
     "input": {
       "title": "研究課題入力",
@@ -141,12 +158,17 @@
       "empty": "議論開始後、各エージェントの分析と議論がリアルタイムに表示されます",
       "roundStart": "第{{round}}ラウンド開始",
       "roundComplete": "第{{round}}ラウンド完了 — 修正をお待ちしています…",
-      "agentQuestion": "（エージェントからの質問）"
+      "agentQuestion": "（エージェントからの質問）",
+      "tagQuestion": "質問",
+      "tagStart": "開始",
+      "running": "実行中",
+      "waitingRevision": "修正待ち"
     },
     "question": {
-      "title": "{{agent}} からの質問",
+      "title": "エージェントからの質問",
       "answerPlaceholder": "回答を入力してください…",
-      "submit": "回答を送信"
+      "submit": "回答を送信",
+      "ctrlEnterHint": "Ctrl + Enter で素早く送信"
     },
     "revision": {
       "title": "第{{round}}ラウンドまとめ — 研究課題を修正してください",
@@ -154,7 +176,8 @@
       "questionLabel": "研究課題",
       "contextLabel": "背景情報",
       "continue": "次のラウンドへ",
-      "finish": "議論を終了"
+      "finish": "議論を終了",
+      "roundProgress": "第 {{current}} / {{max}} ラウンド"
     }
   }
 }

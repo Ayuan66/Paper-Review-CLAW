@@ -114,7 +114,24 @@
       "subtitle": "多Agent AI研究创意讨论与打磨系统",
       "complete": "讨论已完成",
       "fetchResultsFailed": "获取结果失败",
-      "connectionLost": "连接中断：{{msg}}"
+      "connectionLost": "连接中断：{{msg}}",
+      "statusRunning": "第 {{round}} 轮讨论中",
+      "statusRevision": "等待修订",
+      "statusComplete": "讨论完成",
+      "cancelButton": "取消讨论",
+      "cancelConfirmTitle": "确认取消？",
+      "cancelConfirmDesc": "当前讨论将被中断，已完成内容将保留。",
+      "cancelConfirmOk": "确认取消",
+      "cancelConfirmCancel": "继续等待",
+      "restart": "重新开始",
+      "resetButton": "重置",
+      "cancelledByUser": "已手动取消"
+    },
+    "steps": {
+      "input": "输入问题",
+      "discussing": "多Agent讨论",
+      "revision": "修订问题",
+      "complete": "讨论完成"
     },
     "input": {
       "title": "研究问题输入",
@@ -141,12 +158,17 @@
       "empty": "讨论开始后将在此实时显示各Agent的分析与交流",
       "roundStart": "第 {{round}} 轮讨论开始",
       "roundComplete": "第 {{round}} 轮讨论完成，等待修订…",
-      "agentQuestion": "（Agent 提问）"
+      "agentQuestion": "（Agent 提问）",
+      "tagQuestion": "提问",
+      "tagStart": "开始",
+      "running": "运行中",
+      "waitingRevision": "等待修订"
     },
     "question": {
-      "title": "{{agent}} 向您提问",
+      "title": "Agent 问题",
       "answerPlaceholder": "请输入您的回答…",
-      "submit": "提交回答"
+      "submit": "提交回答",
+      "ctrlEnterHint": "Ctrl + Enter 快速提交"
     },
     "revision": {
       "title": "第 {{round}} 轮总结 — 请修订研究问题",
@@ -154,7 +176,8 @@
       "questionLabel": "研究问题",
       "contextLabel": "背景说明",
       "continue": "继续下一轮",
-      "finish": "结束讨论"
+      "finish": "结束讨论",
+      "roundProgress": "第 {{current}} / {{max}} 轮"
     }
   }
 }

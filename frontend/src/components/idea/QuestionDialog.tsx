@@ -1,4 +1,5 @@
-import { Alert, Button, Input, Modal, Space, Typography } from "antd";
+import { MessageOutlined, SendOutlined } from "@ant-design/icons";
+import { Alert, Button, Input, Modal, Space, Tag, Typography } from "antd";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { submitIdeaAnswer } from "../../api/ideaClient";
@@ -43,7 +44,7 @@ export default function QuestionDialog({ sessionId }: Props) {
       clearPendingQuestion();
       setStatus("running");
       setAnswer("");
-    } catch (e) {
+    } catch {
       // keep dialog open on error
     } finally {
       setSubmitting(false);
@@ -53,19 +54,34 @@ export default function QuestionDialog({ sessionId }: Props) {
   const agentLabel = t(`idea.agents.${pendingQuestionAgent}`, {
     defaultValue: pendingQuestionAgent,
   });
+  const tagColor =
+    (
+      {
+        innovation_expert: "blue",
+        feasibility_analyst: "green",
+        methodology_expert: "purple",
+        summarizer: "gold",
+      } as Record<string, string>
+    )[pendingQuestionAgent] ?? "default";
 
   return (
     <Modal
       open={visible}
-      title={t("idea.question.title", { agent: agentLabel })}
+      title={
+        <Space>
+          <MessageOutlined style={{ color: "#fa8c16" }} />
+          <Text strong>{t("idea.question.title")}</Text>
+          <Tag color={tagColor}>{agentLabel}</Tag>
+        </Space>
+      }
       footer={null}
       closable={false}
       maskClosable={false}
       width={560}
     >
       <Alert
-        message={<Text>{pendingQuestion}</Text>}
-        type="info"
+        message={pendingQuestion}
+        type="warning"
         showIcon
         style={{ marginBottom: 16 }}
       />
@@ -75,12 +91,22 @@ export default function QuestionDialog({ sessionId }: Props) {
         onChange={(e) => setAnswer(e.target.value)}
         placeholder={t("idea.question.answerPlaceholder")}
         autoFocus
+        onPressEnter={(e) => {
+          if (e.ctrlKey || e.metaKey) handleSubmit();
+        }}
       />
+      <Text
+        type="secondary"
+        style={{ fontSize: 11, display: "block", marginTop: 4 }}
+      >
+        {t("idea.question.ctrlEnterHint")}
+      </Text>
       <Space
         style={{ marginTop: 12, justifyContent: "flex-end", width: "100%" }}
       >
         <Button
           type="primary"
+          icon={<SendOutlined />}
           loading={submitting}
           disabled={!answer.trim()}
           onClick={handleSubmit}

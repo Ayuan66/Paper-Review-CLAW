@@ -1,7 +1,27 @@
-import { App, Col, Row, Space, Typography } from "antd";
+import {
+  BulbOutlined,
+  ReloadOutlined,
+  RocketOutlined,
+  StopOutlined,
+} from "@ant-design/icons";
+import {
+  Alert,
+  App,
+  Button,
+  Card,
+  Col,
+  Divider,
+  Popconfirm,
+  Row,
+  Space,
+  Steps,
+  Tag,
+  Typography,
+} from "antd";
 import { useRef } from "react";
 import { useTranslation } from "react-i18next";
 import {
+  cancelIdea,
   connectIdeaSSE,
   getIdeaResults,
   startIdeaDiscussion,
@@ -12,9 +32,18 @@ import QuestionDialog from "../components/idea/QuestionDialog";
 import RevisionInput from "../components/idea/RevisionInput";
 import LanguageSwitcher from "../components/LanguageSwitcher";
 import { useIdeaStore } from "../store/ideaStore";
-import type { IdeaProgressEvent } from "../types";
+import type { IdeaProgressEvent, IdeaStatus } from "../types";
 
 const { Title, Text } = Typography;
+
+function currentStep(status: IdeaStatus): number {
+  if (status === "idle") return 0;
+  if (status === "running") return 1;
+  if (status === "waiting_for_input") return 1;
+  if (status === "waiting_for_revision") return 2;
+  if (status === "complete") return 3;
+  return 0;
+}
 
 export default function IdeaPage() {
   const { message } = App.useApp();
@@ -28,6 +57,7 @@ export default function IdeaPage() {
     agentConfig,
     maxRounds,
     status,
+    currentRound,
     setSessionId,
     setStatus,
     addProgressEvent,
@@ -41,7 +71,6 @@ export default function IdeaPage() {
 
   const handleSSEEvent = (event: IdeaProgressEvent) => {
     addProgressEvent(event);
-
     if (event.type === "question") {
       setPendingQuestion(event.content, event.agent);
       setStatus("waiting_for_input");
@@ -87,9 +116,9 @@ export default function IdeaPage() {
       message.warning(t("idea.input.questionRequired"));
       return;
     }
-
+    setStatus("running");
+    setError("");
     try {
-      setStatus("running");
       const { session_id } = await startIdeaDiscussion({
         research_question: researchQuestion,
         user_context: userContext,
@@ -104,6 +133,22 @@ export default function IdeaPage() {
     }
   };
 
+  const handleCancel = async () => {
+    if (esRef.current) {
+      esRef.current.close();
+      esRef.current = null;
+    }
+    if (sessionId) {
+      try {
+        await cancelIdea(sessionId);
+      } catch {
+        /* best-effort */
+      }
+    }
+    setStatus("error");
+    setError(t("idea.page.cancelledByUser"));
+  };
+
   const handleReset = () => {
     if (esRef.current) {
       esRef.current.close();
@@ -112,38 +157,146 @@ export default function IdeaPage() {
     reset();
   };
 
+  const isRunning = status === "running" || status === "waiting_for_input";
+  const isWaitingRevision = status === "waiting_for_revision";
+  const isComplete = status === "complete";
+  const isError = status === "error";
+  const step = currentStep(status);
+
+  const steps = [
+    { title: t("idea.steps.input") },
+    { title: t("idea.steps.discussing") },
+    { title: t("idea.steps.revision") },
+    { title: t("idea.steps.complete") },
+  ];
+
   return (
-    <div style={{ padding: "24px 32px", maxWidth: 1400, margin: "0 auto" }}>
-      <Row justify="space-between" align="middle" style={{ marginBottom: 24 }}>
-        <Space direction="vertical" size={0}>
-          <Title level={2} style={{ margin: 0 }}>
-            {t("idea.page.title")}
-          </Title>
-          <Text type="secondary">{t("idea.page.subtitle")}</Text>
-        </Space>
-        <LanguageSwitcher />
-      </Row>
+    <div style={{ maxWidth: 1400, margin: "0 auto", padding: "24px 16px" }}>
+      <Space direction="vertical" style={{ width: "100%" }} size="large">
+        {/* Header — matches Paper Review CLAW style */}
+        <Card
+          style={{
+            background:
+              "linear-gradient(135deg, #f0fdf4 0%, #dcfce7 60%, #d1fae5 100%)",
+            borderColor: "#bbf7d0",
+            borderRadius: 12,
+          }}
+          styles={{ body: { padding: "20px 24px" } }}
+        >
+          <div
+            style={{
+              display: "flex",
+              justifyContent: "space-between",
+              alignItems: "center",
+            }}
+          >
+            <div>
+              <Title level={2} style={{ marginBottom: 4, color: "#15803d" }}>
+                <BulbOutlined style={{ marginRight: 8 }} />
+                {t("idea.page.title")}
+              </Title>
+              <Text style={{ fontSize: 14, color: "#16a34a" }}>
+                {t("idea.page.subtitle")}
+              </Text>
+            </div>
+            <Space>
+              {isRunning && (
+                <Tag color="processing">
+                  {t("idea.page.statusRunning", { round: currentRound })}
+                </Tag>
+              )}
+              {isWaitingRevision && (
+                <Tag color="warning">{t("idea.page.statusRevision")}</Tag>
+              )}
+              {isComplete && (
+                <Tag color="success">{t("idea.page.statusComplete")}</Tag>
+              )}
+              <LanguageSwitcher />
+            </Space>
+          </div>
+        </Card>
 
-      {error && (
-        <div style={{ marginBottom: 16 }}>
-          <Text type="danger">{error}</Text>
-        </div>
-      )}
+        <Steps current={step} items={steps} size="small" />
 
-      <Row gutter={[24, 24]}>
-        {/* Left column — input + revision */}
-        <Col xs={24} lg={10} xl={9}>
-          <Space direction="vertical" style={{ width: "100%" }} size={16}>
-            <IdeaInput onStart={handleStart} />
-            {sessionId && <RevisionInput sessionId={sessionId} />}
+        {/* Input + Config */}
+        <Row gutter={[16, 16]}>
+          <Col xs={24} md={10}>
+            <IdeaInput />
+          </Col>
+          <Col xs={24} md={14}>
+            {isWaitingRevision && sessionId && (
+              <RevisionInput sessionId={sessionId} />
+            )}
+          </Col>
+        </Row>
+
+        {/* Action Buttons */}
+        <div style={{ textAlign: "center" }}>
+          <Space>
+            {!isWaitingRevision && (
+              <Button
+                type="primary"
+                size="large"
+                onClick={handleStart}
+                loading={isRunning}
+                disabled={isRunning || isWaitingRevision}
+                icon={<RocketOutlined />}
+                style={{ minWidth: 160 }}
+              >
+                {isRunning
+                  ? t("idea.input.starting")
+                  : isComplete
+                    ? t("idea.page.restart")
+                    : t("idea.input.start")}
+              </Button>
+            )}
+
+            {isRunning && (
+              <Popconfirm
+                title={t("idea.page.cancelConfirmTitle")}
+                description={t("idea.page.cancelConfirmDesc")}
+                onConfirm={handleCancel}
+                okText={t("idea.page.cancelConfirmOk")}
+                cancelText={t("idea.page.cancelConfirmCancel")}
+                okButtonProps={{ danger: true }}
+              >
+                <Button size="large" icon={<StopOutlined />} danger>
+                  {t("idea.page.cancelButton")}
+                </Button>
+              </Popconfirm>
+            )}
+
+            {(isError || isComplete) && (
+              <Button
+                size="large"
+                icon={<ReloadOutlined />}
+                onClick={handleReset}
+              >
+                {t("idea.page.resetButton")}
+              </Button>
+            )}
           </Space>
-        </Col>
+        </div>
 
-        {/* Right column — discussion panel */}
-        <Col xs={24} lg={14} xl={15}>
-          <DiscussionPanel />
-        </Col>
-      </Row>
+        {error && (
+          <Alert
+            type="error"
+            message={error}
+            showIcon
+            closable
+            onClose={() => setError("")}
+          />
+        )}
+
+        <Divider style={{ margin: "8px 0" }} />
+
+        {/* Discussion Panel */}
+        <Row gutter={16}>
+          <Col span={24}>
+            <DiscussionPanel />
+          </Col>
+        </Row>
+      </Space>
 
       {/* Question dialog (modal) */}
       {sessionId && <QuestionDialog sessionId={sessionId} />}
