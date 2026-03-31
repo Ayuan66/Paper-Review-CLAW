@@ -15,10 +15,10 @@ idea_bp = Blueprint("idea", __name__, url_prefix="/api/idea")
 _idea_queues: dict[str, tuple[queue.Queue, queue.Queue]] = {}
 
 _DEFAULT_IDEA_MODELS = {
-    "innovation_expert": "deepseek/deepseek-chat",
-    "feasibility_analyst": "deepseek/deepseek-chat",
-    "methodology_expert": "deepseek/deepseek-chat",
-    "summarizer": "deepseek/deepseek-chat",
+    "safety_engineer":  "deepseek/deepseek-chat",
+    "safety_professor": "deepseek/deepseek-chat",
+    "nasa_expert":      "deepseek/deepseek-chat",
+    "arbitrator":       "deepseek/deepseek-chat",
 }
 
 
@@ -35,6 +35,7 @@ def start_idea():
     user_context = (body.get("user_context") or "").strip()
     agent_config = body.get("agent_config", _DEFAULT_IDEA_MODELS.copy())
     max_rounds = int(body.get("max_rounds", 3))
+    internal_rounds = max(1, min(5, int(body.get("internal_rounds", 3))))
 
     session_id = str(uuid.uuid4())
     session = IdeaSession(
@@ -43,6 +44,7 @@ def start_idea():
         user_context=user_context,
         agent_config=agent_config,
         max_rounds=max_rounds,
+        internal_rounds=internal_rounds,
     )
     session.save()
 
@@ -100,24 +102,6 @@ def stream_idea(session_id: str):
             "X-Accel-Buffering": "no",
         },
     )
-
-
-# ---------------------------------------------------------------------------
-# Submit answer to agent's [ASK_USER] question
-# ---------------------------------------------------------------------------
-@idea_bp.route("/sessions/<session_id>/answer", methods=["POST"])
-def submit_answer(session_id: str):
-    if session_id not in _idea_queues:
-        return jsonify({"error": "会话不存在或未启动"}), 404
-
-    body = request.get_json(silent=True) or {}
-    answer = (body.get("answer") or "").strip()
-    if not answer:
-        return jsonify({"error": "answer 不能为空"}), 400
-
-    _, answer_q = _idea_queues[session_id]
-    answer_q.put(answer)
-    return jsonify({"ok": True})
 
 
 # ---------------------------------------------------------------------------

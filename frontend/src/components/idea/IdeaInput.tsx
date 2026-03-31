@@ -18,10 +18,10 @@ const { Title } = Typography;
 const { TextArea } = Input;
 
 const IDEA_ROLE_KEYS = [
-  "innovation_expert",
-  "feasibility_analyst",
-  "methodology_expert",
-  "summarizer",
+  "safety_engineer",
+  "safety_professor",
+  "nasa_expert",
+  "arbitrator",
 ];
 
 export default function IdeaInput() {
@@ -31,17 +31,16 @@ export default function IdeaInput() {
     userContext,
     agentConfig,
     maxRounds,
+    internalRounds,
     status,
     setResearchQuestion,
     setUserContext,
     updateAgentRole,
     setMaxRounds,
+    setInternalRounds,
   } = useIdeaStore();
   const [models, setModels] = useState<ModelOption[]>([]);
-  const disabled =
-    status === "running" ||
-    status === "waiting_for_input" ||
-    status === "waiting_for_revision";
+  const disabled = status === "running" || status === "waiting_for_revision";
 
   useEffect(() => {
     getModels()
@@ -88,6 +87,16 @@ export default function IdeaInput() {
             disabled={disabled}
             value={maxRounds}
             onChange={(v) => setMaxRounds(v ?? 3)}
+          />
+        </Form.Item>
+
+        <Form.Item label={t("idea.input.internalRounds")}>
+          <InputNumber
+            min={1}
+            max={5}
+            disabled={disabled}
+            value={internalRounds}
+            onChange={(v) => setInternalRounds(v ?? 3)}
           />
         </Form.Item>
       </Form>

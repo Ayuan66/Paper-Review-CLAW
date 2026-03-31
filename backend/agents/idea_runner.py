@@ -1,49 +1,46 @@
 """
-Core runner for Research Idea CLAW discussions.
-Uses an imperative loop (not LangGraph) to support real-time interrupts.
+Core runner for Research Idea CLAW — multi-expert internal debate + arbitrator verdict.
 
-ROUND-TABLE MODE: Experts speak sequentially within each round.
-Each expert can see what the previous experts said in the current round.
-
-Flow per round:
-  1. For each of 3 agents *sequentially*: call LLM (with current-round context)
-     → detect [ASK_USER] → block on answer_queue if needed
-  2. Summarizer: aggregate expert outputs → produce round summary
-  3. Push round_complete event → set status=waiting_for_revision
-  4. Block on answer_queue for user-revised idea or 'done' signal
+Flow per user round:
+  1. Internal debate loop (internal_rounds sub-rounds):
+     - For each sub-round: 3 experts speak sequentially, each seeing all prior debate msgs
+     - SSE events carry `internal_round` field to distinguish sub-rounds
+  2. Arbitrator: aggregates all debate → outputs verdict + [REFINED_QUESTION]...[/REFINED_QUESTION]
+  3. round_complete event carries `refined_question` field → frontend auto-fills input box
+  4. Block on answer_queue for user-revised question or 'done' signal
   5. Loop to next round or finish
 
-PAUSE PROTOCOL:
-  - event_queue: producer side (runner → SSE endpoint reads this)
-  - answer_queue: consumer side (runner blocks here waiting for user input)
-  Both queues are put in _idea_queues[session_id] = (event_q, answer_q)
+Queues (same as before):
+  - event_queue: producer side (runner → SSE endpoint)
+  - answer_queue: consumer side (runner blocks waiting for user revision)
 """
 import queue
 import re
-import threading
 from datetime import datetime
 
 from llm.openrouter_client import OpenRouterClient
 from llm.semantic_scholar import search_papers, format_papers_for_prompt
 from models.idea_session import IdeaSession
 from agents.idea_prompts import (
-    INNOVATION_SYSTEM_PROMPT,
-    FEASIBILITY_SYSTEM_PROMPT,
-    METHODOLOGY_SYSTEM_PROMPT,
-    SUMMARIZER_SYSTEM_PROMPT,
+    SAFETY_ENGINEER_SYSTEM_PROMPT,
+    SAFETY_PROFESSOR_SYSTEM_PROMPT,
+    NASA_EXPERT_SYSTEM_PROMPT,
+    ARBITRATOR_SYSTEM_PROMPT,
     AGENT_USER_TEMPLATE,
-    SUMMARIZER_USER_TEMPLATE,
+    ARBITRATOR_USER_TEMPLATE,
 )
 
 _client = OpenRouterClient()
 
 AGENTS = [
-    ("innovation_expert",   "创新性评估者",   INNOVATION_SYSTEM_PROMPT),
-    ("feasibility_analyst", "技术可行性分析师", FEASIBILITY_SYSTEM_PROMPT),
-    ("methodology_expert",  "方法论专家",     METHODOLOGY_SYSTEM_PROMPT),
+    ("safety_engineer",  "系统安全工程师", SAFETY_ENGINEER_SYSTEM_PROMPT),
+    ("safety_professor", "安全领域教授",   SAFETY_PROFESSOR_SYSTEM_PROMPT),
+    ("nasa_expert",      "NASA技术专家",   NASA_EXPERT_SYSTEM_PROMPT),
 ]
 
-ASK_USER_RE = re.compile(r"\[ASK_USER\](.*?)\[/ASK_USER\]", re.DOTALL)
+REFINED_QUESTION_RE = re.compile(
+    r"\[REFINED_QUESTION\](.*?)\[/REFINED_QUESTION\]", re.DOTALL
+)
 DEFAULT_MODEL = "deepseek/deepseek-chat"
 
 
@@ -78,25 +75,17 @@ def _build_discussion_history(discussions: list, round_num: int | None = None) -
     return "\n".join(lines) if lines else "（暂无历史讨论）"
 
 
-def _build_current_round_messages(round_messages: list[tuple[str, str, str]]) -> str:
-    """Format messages from experts who have already spoken in this round.
-    Each item is (agent_key, agent_role, content).
+def _build_internal_debate_history(
+    debate_msgs: list[tuple[int, str, str, str]]
+) -> str:
+    """Format all debate messages accumulated so far in this user round.
+    Each item is (sub_round, agent_key, agent_role, content).
     """
-    if not round_messages:
+    if not debate_msgs:
         return "（你是本轮第一位发言的专家）"
     lines = []
-    for _agent_key, role, content in round_messages:
-        lines.append(f"### {role} 的发言\n\n{content}\n")
-    return "\n".join(lines)
-
-
-def _build_user_answers_block(user_answers: list, round_num: int) -> str:
-    answers = [a for a in user_answers if a.get("round") == round_num]
-    if not answers:
-        return ""
-    lines = ["## 用户补充回答"]
-    for a in answers:
-        lines.append(f"**{a['role']}提问**：{a['question']}\n**用户回答**：{a['answer']}\n")
+    for sub_round, agent_key, role, content in debate_msgs:
+        lines.append(f"**[辩论第{sub_round}轮] {role}（{agent_key}）**:\n{content}\n")
     return "\n".join(lines)
 
 
@@ -109,9 +98,11 @@ def run_idea_discussion(
     Main runner. Designed to be called in a background thread.
     Loads session from disk at the start and saves incrementally.
     """
+    refined_question = ""
     try:
         session = IdeaSession.load(session_id)
         agent_config = session.agent_config
+        internal_rounds = getattr(session, "internal_rounds", 3)
 
         # ---------------------------------------------------------------
         # Step 0: Search for relevant papers
@@ -150,174 +141,116 @@ def run_idea_discussion(
                 f"开始第 {round_num} 轮讨论", phase="discussing", round=round_num
             ))
 
-            round_expert_outputs: list[str] = []
-            # Track messages from experts who already spoke in this round
-            current_round_msgs: list[tuple[str, str, str]] = []
-
-            # -----------------------------------------------------------
-            # Each expert agent — SEQUENTIAL round-table order
-            # -----------------------------------------------------------
-            for agent_key, agent_role, system_prompt in AGENTS:
-                model = agent_config.get(agent_key, DEFAULT_MODEL)
-
-                _push(event_queue, _make_event(
-                    "start", agent_key, agent_role, f"{agent_role} 开始分析...",
-                    phase="discussing", round=round_num
-                ))
-
-                user_context_block = (
-                    f"**补充背景**：{session.user_context}" if session.user_context
-                    else ""
-                )
-                discussion_history = _build_discussion_history(session.discussions, round_num)
-                user_answers_block = _build_user_answers_block(session.user_answers, round_num)
-                current_round_text = _build_current_round_messages(current_round_msgs)
-
-                user_prompt = AGENT_USER_TEMPLATE.format(
-                    research_question=session.research_question,
-                    user_context_block=user_context_block,
-                    search_results=search_text,
-                    discussion_history=discussion_history,
-                    current_round_messages=current_round_text,
-                    user_answers_block=user_answers_block,
-                )
-
-                content = _client.chat(
-                    model=model,
-                    messages=[
-                        {"role": "system", "content": system_prompt},
-                        {"role": "user",   "content": user_prompt},
-                    ],
-                    temperature=0.7,
-                    max_tokens=4096,
-                )
-
-                # Detect [ASK_USER] marker
-                ask_match = ASK_USER_RE.search(content)
-                if ask_match:
-                    question_text = ask_match.group(1).strip()
-                    # Strip the marker from displayed content
-                    display_content = ASK_USER_RE.sub("", content).strip()
-
-                    # Save partial content
-                    if display_content:
-                        session.discussions.append({
-                            "round": round_num, "agent": agent_key,
-                            "role": agent_role, "content": display_content,
-                            "timestamp": _now(),
-                        })
-                        session.save()
-                        _push(event_queue, _make_event(
-                            "partial", agent_key, agent_role, display_content,
-                            phase="discussing", round=round_num
-                        ))
-
-                    # Pause: ask user
-                    session.status = "waiting_for_input"
-                    session.pending_question = question_text
-                    session.pending_question_agent = agent_key
-                    session.save()
-
-                    _push(event_queue, _make_event(
-                        "question", agent_key, agent_role, question_text,
-                        phase="waiting_for_input", round=round_num
-                    ))
-
-                    # Block until user answers (1 hour timeout)
-                    try:
-                        answer = answer_queue.get(timeout=3600)
-                    except queue.Empty:
-                        raise RuntimeError("等待用户回答超时（1小时）")
-
-                    if answer is None:
-                        raise RuntimeError("用户取消了讨论")
-
-                    # Record answer
-                    session.user_answers.append({
-                        "round": round_num, "agent": agent_key, "role": agent_role,
-                        "question": question_text, "answer": answer,
-                        "timestamp": _now(),
-                    })
-                    session.status = "discussing"
-                    session.pending_question = ""
-                    session.save()
-
-                    _push(event_queue, _make_event(
-                        "answer_received", agent_key, agent_role,
-                        answer, phase="discussing", round=round_num
-                    ))
-
-                    # Re-call with user answer included
-                    updated_answers_block = _build_user_answers_block(session.user_answers, round_num)
-                    user_prompt_retry = AGENT_USER_TEMPLATE.format(
-                        research_question=session.research_question,
-                        user_context_block=user_context_block,
-                        search_results=search_text,
-                        discussion_history=discussion_history,
-                        current_round_messages=current_round_text,
-                        user_answers_block=updated_answers_block,
-                    )
-                    content = _client.chat(
-                        model=model,
-                        messages=[
-                            {"role": "system", "content": system_prompt},
-                            {"role": "user",   "content": user_prompt_retry},
-                        ],
-                        temperature=0.7,
-                        max_tokens=4096,
-                    )
-                    content = ASK_USER_RE.sub("", content).strip()
-
-                # Save expert output
-                session.discussions.append({
-                    "round": round_num, "agent": agent_key,
-                    "role": agent_role, "content": content,
-                    "timestamp": _now(),
-                })
-                session.save()
-                round_expert_outputs.append(f"### {agent_role}\n\n{content}")
-                # Track for next expert in this round
-                current_round_msgs.append((agent_key, agent_role, content))
-
-                _push(event_queue, _make_event(
-                    "complete", agent_key, agent_role, content,
-                    phase="discussing", round=round_num
-                ))
-
-            # -----------------------------------------------------------
-            # Summarizer
-            # -----------------------------------------------------------
-            summarizer_model = agent_config.get("summarizer", DEFAULT_MODEL)
-            _push(event_queue, _make_event(
-                "start", "summarizer", "研究顾问", "正在综合各专家意见...",
-                phase="summarizing", round=round_num
-            ))
+            # Accumulates ALL debate messages in this user round:
+            # (sub_round, agent_key, agent_role, content)
+            all_debate_msgs: list[tuple[int, str, str, str]] = []
 
             user_context_block = (
                 f"**补充背景**：{session.user_context}" if session.user_context else ""
             )
-            summarizer_prompt = SUMMARIZER_USER_TEMPLATE.format(
+            discussion_history = _build_discussion_history(session.discussions, round_num)
+
+            # -----------------------------------------------------------
+            # Internal debate loop: internal_rounds sub-rounds
+            # -----------------------------------------------------------
+            for sub_round in range(1, internal_rounds + 1):
+                _push(event_queue, _make_event(
+                    "internal_round_start", "system", "系统",
+                    f"内部辩论第 {sub_round} / {internal_rounds} 小轮",
+                    phase="discussing", round=round_num, internal_round=sub_round
+                ))
+
+                for agent_key, agent_role, system_prompt in AGENTS:
+                    model = agent_config.get(agent_key, DEFAULT_MODEL)
+
+                    _push(event_queue, _make_event(
+                        "start", agent_key, agent_role,
+                        f"{agent_role} 开始发言...",
+                        phase="discussing", round=round_num, internal_round=sub_round
+                    ))
+
+                    debate_history_text = _build_internal_debate_history(all_debate_msgs)
+                    user_prompt = AGENT_USER_TEMPLATE.format(
+                        research_question=session.research_question,
+                        user_context_block=user_context_block,
+                        search_results=search_text,
+                        discussion_history=discussion_history,
+                        internal_debate_history=debate_history_text,
+                    )
+
+                    content = _client.chat(
+                        model=model,
+                        messages=[
+                            {"role": "system", "content": system_prompt},
+                            {"role": "user",   "content": user_prompt},
+                        ],
+                        temperature=0.75,
+                        max_tokens=2048,
+                    )
+
+                    session.discussions.append({
+                        "round": round_num,
+                        "internal_round": sub_round,
+                        "agent": agent_key,
+                        "role": agent_role,
+                        "content": content,
+                        "timestamp": _now(),
+                    })
+                    session.save()
+                    all_debate_msgs.append((sub_round, agent_key, agent_role, content))
+
+                    _push(event_queue, _make_event(
+                        "complete", agent_key, agent_role, content,
+                        phase="discussing", round=round_num, internal_round=sub_round
+                    ))
+
+            # -----------------------------------------------------------
+            # Arbitrator — synthesize debate and output verdict + refined question
+            # -----------------------------------------------------------
+            arbitrator_model = agent_config.get("arbitrator", DEFAULT_MODEL)
+            _push(event_queue, _make_event(
+                "start", "arbitrator", "仲裁者",
+                "正在综合辩论结果，给出仲裁结论...",
+                phase="summarizing", round=round_num
+            ))
+
+            debate_content = "\n\n".join(
+                f"**[辩论第{sr}轮] {role}（{ak}）**:\n{body}"
+                for sr, ak, role, body in all_debate_msgs
+            )
+            arbitrator_prompt = ARBITRATOR_USER_TEMPLATE.format(
                 research_question=session.research_question,
                 user_context_block=user_context_block,
+                search_results=search_text,
+                discussion_history=discussion_history,
                 round_num=round_num,
-                expert_discussions="\n\n".join(round_expert_outputs),
+                debate_content=debate_content,
             )
-            summary_content = _client.chat(
-                model=summarizer_model,
+            arbitrator_content = _client.chat(
+                model=arbitrator_model,
                 messages=[
-                    {"role": "system", "content": SUMMARIZER_SYSTEM_PROMPT},
-                    {"role": "user",   "content": summarizer_prompt},
+                    {"role": "system", "content": ARBITRATOR_SYSTEM_PROMPT},
+                    {"role": "user",   "content": arbitrator_prompt},
                 ],
                 temperature=0.6,
                 max_tokens=4096,
             )
+
+            # Extract and strip the [REFINED_QUESTION] marker
+            refined_match = REFINED_QUESTION_RE.search(arbitrator_content)
+            refined_question = refined_match.group(1).strip() if refined_match else ""
+            display_arbitrator = REFINED_QUESTION_RE.sub("", arbitrator_content).strip()
+
             session.summaries.append({
-                "round": round_num, "content": summary_content, "timestamp": _now()
+                "round": round_num,
+                "content": arbitrator_content,
+                "refined_question": refined_question,
+                "timestamp": _now(),
             })
             session.save()
 
             _push(event_queue, _make_event(
-                "complete", "summarizer", "研究顾问", summary_content,
+                "complete", "arbitrator", "仲裁者", display_arbitrator,
                 phase="summarizing", round=round_num
             ))
 
@@ -329,8 +262,9 @@ def run_idea_discussion(
                 session.save()
                 _push(event_queue, _make_event(
                     "round_complete", "system", "系统",
-                    f"第 {round_num} 轮讨论完成，请修改研究想法后继续或结束讨论",
-                    phase="waiting_for_revision", round=round_num
+                    f"第 {round_num} 轮讨论完成，请修改研究问题后继续或结束讨论",
+                    phase="waiting_for_revision", round=round_num,
+                    refined_question=refined_question,
                 ))
 
                 # Block for user to revise idea or signal done
@@ -352,7 +286,7 @@ def run_idea_discussion(
 
                 _push(event_queue, _make_event(
                     "revision_received", "system", "系统",
-                    f"已收到修改后的研究想法，开始第 {round_num + 1} 轮讨论",
+                    f"已收到修改后的研究问题，开始第 {round_num + 1} 轮讨论",
                     phase="discussing", round=round_num + 1
                 ))
             else:

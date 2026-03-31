@@ -137,44 +137,41 @@
     "input": {
       "title": "Research Question Input",
       "questionLabel": "Research Question / Idea",
-      "questionPlaceholder": "e.g. How can large language models improve code review efficiency?",
+      "questionPlaceholder": "e.g. How to improve formal verification efficiency for safety-critical systems?",
       "contextLabel": "Background (optional)",
       "contextPlaceholder": "Describe your research background, prior work, focus areas…",
       "maxRounds": "Max Discussion Rounds",
+      "internalRounds": "Internal Debate Sub-rounds",
       "agentConfig": "Agent Model Configuration",
       "start": "Start Discussion",
       "starting": "Discussing…",
       "questionRequired": "Please enter a research question first"
     },
     "agents": {
-      "innovation_expert": "Innovation Expert",
-      "feasibility_analyst": "Feasibility Analyst",
-      "methodology_expert": "Methodology Expert",
-      "summarizer": "Summarizer",
+      "safety_engineer": "Safety Systems Engineer",
+      "safety_professor": "Safety Domain Professor",
+      "nasa_expert": "NASA Technical Expert",
+      "arbitrator": "Arbitrator",
       "system": "System"
     },
     "discussion": {
       "title": "Discussion",
       "titleCount": "Discussion ({{count}})",
-      "empty": "Expert roundtable discussion will appear here in real time",
+      "empty": "Expert debate will appear here in real time once discussion starts",
       "roundStart": "Round {{round}} started",
-      "roundComplete": "Round {{round}} complete — waiting for revision…",
-      "agentQuestion": "(Agent question)",
-      "tagQuestion": "Question",
+      "roundComplete": "Round {{round}} complete — arbitrator refined the question, please revise…",
+      "internalRoundStart": "Internal debate sub-round {{sub}} / {{total}}",
       "tagStart": "Started",
       "running": "Running",
       "waitingRevision": "Awaiting Revision"
     },
     "question": {
-      "title": "Agent Question",
-      "answerPlaceholder": "Type your answer…",
-      "submit": "Submit Answer",
-      "ctrlEnterHint": "Ctrl + Enter to submit quickly"
+      "title": "Arbitrator Refined Question"
     },
     "revision": {
-      "title": "Round {{round}} Summary — Please revise your idea",
-      "summaryLabel": "This round's summary:",
-      "questionLabel": "Research Question",
+      "title": "Round {{round}} Arbitration — Revise Your Question",
+      "summaryLabel": "Arbitrator verdict:",
+      "questionLabel": "Research Question (refined by arbitrator)",
       "contextLabel": "Background",
       "continue": "Continue to Next Round",
       "finish": "End Discussion",

@@ -137,44 +137,41 @@
     "input": {
       "title": "研究问题输入",
       "questionLabel": "研究问题 / 想法",
-      "questionPlaceholder": "例：如何利用大语言模型提升代码审查效率？",
+      "questionPlaceholder": "例：如何提升安全攸关软件系统的形式化验证效率？",
       "contextLabel": "背景说明（可选）",
       "contextPlaceholder": "描述您的研究背景、已有工作、关注的方向等…",
       "maxRounds": "最大讨论轮数",
+      "internalRounds": "每轮内部辩论小轮数",
       "agentConfig": "Agent 模型配置",
       "start": "开始讨论",
       "starting": "讨论进行中…",
       "questionRequired": "请先输入研究问题"
     },
     "agents": {
-      "innovation_expert": "创新性评估者",
-      "feasibility_analyst": "可行性分析师",
-      "methodology_expert": "方法论专家",
-      "summarizer": "总结者",
+      "safety_engineer": "系统安全工程师",
+      "safety_professor": "安全领域教授",
+      "nasa_expert": "NASA技术专家",
+      "arbitrator": "仲裁者",
       "system": "系统"
     },
     "discussion": {
       "title": "讨论过程",
       "titleCount": "讨论过程（{{count}} 条）",
-      "empty": "讨论开始后将在此实时显示专家圆桌讨论过程",
+      "empty": "讨论开始后将在此实时显示专家辩论过程",
       "roundStart": "第 {{round}} 轮讨论开始",
-      "roundComplete": "第 {{round}} 轮讨论完成，等待修订…",
-      "agentQuestion": "（Agent 提问）",
-      "tagQuestion": "提问",
+      "roundComplete": "第 {{round}} 轮讨论完成，仲裁者已精炼问题，请修订后继续…",
+      "internalRoundStart": "内部辩论 第 {{sub}} / {{total}} 小轮",
       "tagStart": "开始",
       "running": "运行中",
       "waitingRevision": "等待修订"
     },
     "question": {
-      "title": "Agent 问题",
-      "answerPlaceholder": "请输入您的回答…",
-      "submit": "提交回答",
-      "ctrlEnterHint": "Ctrl + Enter 快速提交"
+      "title": "仲裁者精炼问题"
     },
     "revision": {
-      "title": "第 {{round}} 轮总结 — 请修订研究问题",
-      "summaryLabel": "本轮总结：",
-      "questionLabel": "研究问题",
+      "title": "第 {{round}} 轮仲裁结论 — 请修订研究问题",
+      "summaryLabel": "仲裁者结论：",
+      "questionLabel": "研究问题（已由仲裁者精炼）",
       "contextLabel": "背景说明",
       "continue": "继续下一轮",
       "finish": "结束讨论",

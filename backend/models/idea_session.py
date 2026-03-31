@@ -11,25 +11,20 @@ class IdeaSession:
     research_question: str
     agent_config: dict = field(default_factory=dict)
     status: str = "created"
-    # created | discussing | waiting_for_input | waiting_for_revision | complete | error
+    # created | discussing | waiting_for_revision | complete | error
     created_at: str = field(default_factory=lambda: datetime.utcnow().isoformat())
 
     user_context: str = ""          # Optional background / constraints from user
     current_round: int = 0
     max_rounds: int = 3
+    internal_rounds: int = 3         # Sub-rounds of internal debate per user round
 
-    # Discussion records: [{round, agent, role, content, timestamp}]
+    # Discussion records: [{round, internal_round, agent, role, content, timestamp}]
     discussions: list = field(default_factory=list)
-    # Per-round summaries: [{round, content}]
+    # Per-round summaries: [{round, content, refined_question, timestamp}]
     summaries: list = field(default_factory=list)
-    # User answers to agent questions: [{round, agent, question, answer, timestamp}]
-    user_answers: list = field(default_factory=list)
     # Semantic Scholar results: [{title, authors, year, citationCount, abstract, tldr, url}]
     search_results: list = field(default_factory=list)
-
-    # Current pending question (when status == waiting_for_input)
-    pending_question: str = ""
-    pending_question_agent: str = ""
 
     error: str = ""
 

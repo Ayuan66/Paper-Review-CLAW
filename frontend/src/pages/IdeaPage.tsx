@@ -30,7 +30,6 @@ import {
 } from "../api/ideaClient";
 import DiscussionPanel from "../components/idea/DiscussionPanel";
 import IdeaInput from "../components/idea/IdeaInput";
-import QuestionDialog from "../components/idea/QuestionDialog";
 import RevisionInput from "../components/idea/RevisionInput";
 import LanguageSwitcher from "../components/LanguageSwitcher";
 import { useIdeaStore } from "../store/ideaStore";
@@ -41,7 +40,6 @@ const { Title, Text } = Typography;
 function currentStep(status: IdeaStatus): number {
   if (status === "idle") return 0;
   if (status === "running") return 1;
-  if (status === "waiting_for_input") return 1;
   if (status === "waiting_for_revision") return 2;
   if (status === "complete") return 3;
   return 0;
@@ -58,6 +56,7 @@ export default function IdeaPage() {
     userContext,
     agentConfig,
     maxRounds,
+    internalRounds,
     status,
     currentRound,
     setSessionId,
@@ -65,7 +64,7 @@ export default function IdeaPage() {
     addProgressEvent,
     setResults,
     setError,
-    setPendingQuestion,
+    setResearchQuestion,
     setCurrentRound,
     reset,
     error,
@@ -73,12 +72,13 @@ export default function IdeaPage() {
 
   const handleSSEEvent = (event: IdeaProgressEvent) => {
     addProgressEvent(event);
-    if (event.type === "question") {
-      setPendingQuestion(event.content, event.agent);
-      setStatus("waiting_for_input");
-    } else if (event.type === "round_complete") {
+    if (event.type === "round_complete") {
       setCurrentRound(event.round);
       setStatus("waiting_for_revision");
+      // Auto-fill refined question from arbitrator into the input box
+      if (event.refined_question) {
+        setResearchQuestion(event.refined_question as string);
+      }
     } else if (event.type === "round_start") {
       setCurrentRound(event.round);
       setStatus("running");
@@ -126,6 +126,7 @@ export default function IdeaPage() {
         user_context: userContext,
         agent_config: agentConfig,
         max_rounds: maxRounds,
+        internal_rounds: internalRounds,
       });
       setSessionId(session_id);
       connectAndListen(session_id);
@@ -159,7 +160,7 @@ export default function IdeaPage() {
     reset();
   };
 
-  const isRunning = status === "running" || status === "waiting_for_input";
+  const isRunning = status === "running";
   const isWaitingRevision = status === "waiting_for_revision";
   const isComplete = status === "complete";
   const isError = status === "error";
@@ -309,9 +310,6 @@ export default function IdeaPage() {
           </Col>
         </Row>
       </Space>
-
-      {/* Question dialog (modal) */}
-      {sessionId && <QuestionDialog sessionId={sessionId} />}
     </div>
   );
 }

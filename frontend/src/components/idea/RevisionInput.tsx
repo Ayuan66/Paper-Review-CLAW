@@ -4,7 +4,7 @@ import {
   EditOutlined,
 } from "@ant-design/icons";
 import { Alert, Button, Card, Form, Input, Space, Tag, Typography } from "antd";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { finishIdeaEarly, submitIdeaRevision } from "../../api/ideaClient";
 import { useIdeaStore } from "../../store/ideaStore";
@@ -35,10 +35,15 @@ export default function RevisionInput({ sessionId }: Props) {
   const [submitting, setSubmitting] = useState(false);
   const [finishing, setFinishing] = useState(false);
 
-  // Find the latest summarizer output for this round
+  // Sync editedQuestion when store is updated by arbitrator's refined question
+  useEffect(() => {
+    setEditedQuestion(researchQuestion);
+  }, [researchQuestion]);
+
+  // Find the latest arbitrator output for this round
   const summaryEvent = [...progressEvents]
     .reverse()
-    .find((e) => e.agent === "summarizer" && e.type === "complete");
+    .find((e) => e.agent === "arbitrator" && e.type === "complete");
 
   async function handleContinue() {
     setSubmitting(true);

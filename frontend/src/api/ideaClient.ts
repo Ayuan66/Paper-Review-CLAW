@@ -8,6 +8,7 @@ export async function startIdeaDiscussion(params: {
   user_context?: string;
   agent_config?: Record<string, string>;
   max_rounds?: number;
+  internal_rounds?: number;
 }): Promise<{ session_id: string }> {
   const res = await http.post("/start", params);
   return res.data;
@@ -18,13 +19,6 @@ export async function getIdeaResults(
 ): Promise<IdeaSessionResults> {
   const res = await http.get(`/sessions/${sessionId}/results`);
   return res.data;
-}
-
-export async function submitIdeaAnswer(
-  sessionId: string,
-  answer: string,
-): Promise<void> {
-  await http.post(`/sessions/${sessionId}/answer`, { answer });
 }
 
 export async function submitIdeaRevision(

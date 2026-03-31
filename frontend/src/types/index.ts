@@ -105,8 +105,7 @@ export interface IdeaProgressEvent {
     | "start"
     | "complete"
     | "partial"
-    | "question"
-    | "answer_received"
+    | "internal_round_start"
     | "round_start"
     | "round_complete"
     | "revision_received"
@@ -118,13 +117,14 @@ export interface IdeaProgressEvent {
   timestamp: string;
   phase: string;
   round: number;
+  internal_round?: number;
+  refined_question?: string;
   [key: string]: unknown;
 }
 
 export type IdeaStatus =
   | "idle"
   | "running"
-  | "waiting_for_input"
   | "waiting_for_revision"
   | "complete"
   | "error";

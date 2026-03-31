@@ -4,7 +4,6 @@ import {
   CloseCircleOutlined,
   InfoCircleOutlined,
   LoadingOutlined,
-  MessageOutlined,
   SyncOutlined,
 } from "@ant-design/icons";
 import { Card, Divider, Empty, Space, Tag, Typography } from "antd";
@@ -21,10 +20,10 @@ const AGENT_COLORS: Record<
   string,
   { bg: string; border: string; tag: string }
 > = {
-  innovation_expert: { bg: "#e6f4ff", border: "#91caff", tag: "blue" },
-  feasibility_analyst: { bg: "#f6ffed", border: "#b7eb8f", tag: "green" },
-  methodology_expert: { bg: "#f9f0ff", border: "#d3adf7", tag: "purple" },
-  summarizer: { bg: "#fffbe6", border: "#ffe58f", tag: "gold" },
+  safety_engineer: { bg: "#e6f4ff", border: "#91caff", tag: "blue" },
+  safety_professor: { bg: "#f6ffed", border: "#b7eb8f", tag: "green" },
+  nasa_expert: { bg: "#fff0f6", border: "#ffadd2", tag: "magenta" },
+  arbitrator: { bg: "#fffbe6", border: "#ffe58f", tag: "gold" },
   system: { bg: "#f5f5f5", border: "#d9d9d9", tag: "default" },
 };
 
@@ -33,8 +32,6 @@ function StatusIcon({ event }: { event: IdeaProgressEvent }) {
     return <CloseCircleOutlined style={{ color: "#ff4d4f" }} />;
   if (event.type === "complete" && event.agent !== "system")
     return <CheckCircleOutlined style={{ color: "#52c41a" }} />;
-  if (event.type === "question")
-    return <MessageOutlined style={{ color: "#fa8c16" }} />;
   if (event.type === "start")
     return <LoadingOutlined style={{ color: "#1677ff" }} />;
   return null;
@@ -44,6 +41,16 @@ function StatusIcon({ event }: { event: IdeaProgressEvent }) {
 function SystemBanner({ event }: { event: IdeaProgressEvent }) {
   const { t } = useTranslation();
 
+  if (event.type === "internal_round_start") {
+    return (
+      <Divider style={{ margin: "8px 0", borderColor: "#9254de" }}>
+        <SyncOutlined style={{ marginRight: 6, color: "#9254de" }} />
+        <Text strong style={{ color: "#9254de", fontSize: 12 }}>
+          {event.content}
+        </Text>
+      </Divider>
+    );
+  }
   if (event.type === "round_start") {
     return (
       <Divider style={{ margin: "12px 0", borderColor: "#1677ff" }}>
@@ -87,14 +94,14 @@ function SystemBanner({ event }: { event: IdeaProgressEvent }) {
   return null;
 }
 
-/** Chat bubble for expert / summarizer messages */
+/** Chat bubble for expert / arbitrator messages */
 function ChatBubble({ event }: { event: IdeaProgressEvent }) {
   const { t } = useTranslation();
   const agentLabel = t(`idea.agents.${event.agent}`, {
     defaultValue: event.agent,
   });
   const colors = AGENT_COLORS[event.agent] ?? AGENT_COLORS.system;
-  const isSummarizer = event.agent === "summarizer";
+  const isSummarizer = event.agent === "arbitrator";
 
   return (
     <div style={{ marginBottom: 12 }}>
@@ -111,9 +118,6 @@ function ChatBubble({ event }: { event: IdeaProgressEvent }) {
           {agentLabel}
         </Tag>
         <StatusIcon event={event} />
-        {event.type === "question" && (
-          <Tag color="orange">{t("idea.discussion.tagQuestion")}</Tag>
-        )}
         {event.type === "start" && (
           <Tag color="processing">{t("idea.discussion.tagStart")}</Tag>
         )}
@@ -166,9 +170,7 @@ export default function DiscussionPanel() {
     }
   }, [progressEvents.length]);
 
-  const visible = progressEvents.filter(
-    (e) => e.type !== "answer_received" && e.type !== "revision_received",
-  );
+  const visible = progressEvents.filter((e) => e.type !== "revision_received");
 
   if (visible.length === 0) {
     return (
@@ -185,7 +187,7 @@ export default function DiscussionPanel() {
     <Space size="small">
       <BulbOutlined />
       {t("idea.discussion.titleCount", { count: visible.length })}
-      {(status === "running" || status === "waiting_for_input") && (
+      {status === "running" && (
         <Tag color="processing">{t("idea.discussion.running")}</Tag>
       )}
       {status === "waiting_for_revision" && (

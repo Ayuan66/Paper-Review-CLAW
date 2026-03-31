@@ -137,44 +137,41 @@
     "input": {
       "title": "研究課題入力",
       "questionLabel": "研究課題 / アイデア",
-      "questionPlaceholder": "例：大規模言語モデルはコードレビューの効率をどのように向上できるか？",
+      "questionPlaceholder": "例：安全攸関システムの形式検証効率をどのように向上させるか？",
       "contextLabel": "背景情報（任意）",
       "contextPlaceholder": "研究背景、先行研究、注目している方向性などを記述してください…",
       "maxRounds": "最大議論ラウンド数",
+      "internalRounds": "内部討論サブラウンド数",
       "agentConfig": "エージェントモデル設定",
       "start": "議論開始",
       "starting": "議論中…",
       "questionRequired": "先に研究課題を入力してください"
     },
     "agents": {
-      "innovation_expert": "革新性評価者",
-      "feasibility_analyst": "実現可能性分析者",
-      "methodology_expert": "方法論専門家",
-      "summarizer": "要約者",
+      "safety_engineer": "安全システムエンジニア",
+      "safety_professor": "安全領域教授",
+      "nasa_expert": "NASA技術専門家",
+      "arbitrator": "仲裁者",
       "system": "システム"
     },
     "discussion": {
       "title": "議論過程",
       "titleCount": "議論過程（{{count}}件）",
-      "empty": "議論開始後、専門家の円卓議論がリアルタイムに表示されます",
+      "empty": "議論開始後、専門家の討論がリアルタイムに表示されます",
       "roundStart": "第{{round}}ラウンド開始",
-      "roundComplete": "第{{round}}ラウンド完了 — 修正をお待ちしています…",
-      "agentQuestion": "（エージェントからの質問）",
-      "tagQuestion": "質問",
+      "roundComplete": "第{{round}}ラウンド完了 — 仲裁者が課題を整理しました。修正してください…",
+      "internalRoundStart": "内部討論 第{{sub}} / {{total}}サブラウンド",
       "tagStart": "開始",
       "running": "実行中",
       "waitingRevision": "修正待ち"
     },
     "question": {
-      "title": "エージェントからの質問",
-      "answerPlaceholder": "回答を入力してください…",
-      "submit": "回答を送信",
-      "ctrlEnterHint": "Ctrl + Enter で素早く送信"
+      "title": "仲裁者整理済み課題"
     },
     "revision": {
-      "title": "第{{round}}ラウンドまとめ — 研究課題を修正してください",
-      "summaryLabel": "今ラウンドのまとめ：",
-      "questionLabel": "研究課題",
+      "title": "第{{round}}ラウンド仲裁 — 研究課題を修正してください",
+      "summaryLabel": "仲裁結論：",
+      "questionLabel": "研究課題（仲裁者が整理済み）",
       "contextLabel": "背景情報",
       "continue": "次のラウンドへ",
       "finish": "議論を終了",
