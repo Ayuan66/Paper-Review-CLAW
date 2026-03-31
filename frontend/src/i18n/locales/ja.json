@@ -6,6 +6,7 @@
       "upload": "論文アップロード",
       "configure": "エージェント設定",
       "review": "査読実行",
+      "editResponse": "著者回応の編集",
       "results": "結果確認"
     },
     "startButton": "査読開始",
@@ -31,7 +32,6 @@
   },
   "agentConfig": {
     "title": "エージェントモデル設定",
-    "maxIterations": "著者議論の最大ラウンド数",
     "selectModel": "モデルを選択"
   },
   "venue": {
@@ -54,7 +54,7 @@
       "preparing": "準備中",
       "reviewing": "査読中",
       "editing": "編集者まとめ",
-      "discussing": "著者ディスカッション",
+      "author_responding": "著者回応",
       "finalizing": "レポート生成",
       "complete": "完了",
       "error": "エラー"
@@ -65,8 +65,7 @@
       "reviewer_2": "査読者 2",
       "reviewer_3": "査読者 3",
       "editor": "編集者",
-      "author_a": "著者 A",
-      "author_b": "著者 B",
+      "author": "著者",
       "finalize": "レポート確定",
       "system": "システム"
     }
@@ -78,15 +77,24 @@
     "errorDetail": "エラー詳細",
     "viewOutput": "出力を見る",
     "tabs": {
-      "editorSummary": "編集者まとめ",
-      "discussions": "著者ディスカッション（{{count}}件）",
+      "editorSummary": "第1ラウンド編集者まとめ",
+      "authorResponse": "著者修正ドラフト",
+      "reviewsRound2": "第2ラウンド査読",
+      "editorSummaryRound2": "第2ラウンド編集者まとめ",
       "finalReport": "最終修正レポート"
     },
-    "noDiscussions": "ディスカッション記録なし",
     "noContent": "コンテンツなし",
     "downloadBtn": "Markdownをダウンロード",
     "downloadZipBtn": "全てダウンロード (ZIP)",
     "roundLabel": "第{{round}}ラウンド"
+  },
+  "authorEditor": {
+    "title": "著者回応の編集",
+    "editHint": "AIが著者回応の草稿を作成しました。編集後、査読者に第2ラウンドとして提出できます。",
+    "submitBtn": "第2ラウンド査読へ提出",
+    "resetBtn": "AI草稿に戻す",
+    "editMode": "編集",
+    "previewMode": "プレビュー"
   },
   "errors": {
     "startFailed": "起動に失敗しました",

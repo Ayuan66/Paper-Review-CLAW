@@ -5,7 +5,6 @@ load_dotenv()
 
 OPENROUTER_API_KEY = os.getenv("OPENROUTER_API_KEY", "")
 FLASK_DEBUG = os.getenv("FLASK_DEBUG", "false").lower() == "true"
-MAX_AUTHOR_ITERATIONS = int(os.getenv("MAX_AUTHOR_ITERATIONS", "5"))
 
 STORAGE_DIR = os.path.join(os.path.dirname(__file__), "storage")
 UPLOADS_DIR = os.path.join(STORAGE_DIR, "uploads")
@@ -16,8 +15,7 @@ DEFAULT_MODELS = {
     "reviewer_2": "google/gemini-2.0-flash-001",
     "reviewer_3": "qwen/qwen3-235b-a22b",
     "editor": "deepseek/deepseek-chat",
-    "author_a": "deepseek/deepseek-chat",
-    "author_b": "google/gemini-2.0-flash-001",
+    "author": "deepseek/deepseek-chat",
 }
 
 # 无地区限制的可用模型列表
@@ -51,8 +49,7 @@ AGENT_ROLES = {
     "reviewer_2": "审稿人 2",
     "reviewer_3": "审稿人 3",
     "editor": "编辑",
-    "author_a": "作者 A",
-    "author_b": "作者 B",
+    "author": "作者",
 }
 
 VENUES: dict[str, dict] = {

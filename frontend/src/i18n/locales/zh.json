@@ -6,6 +6,7 @@
       "upload": "上传论文",
       "configure": "配置 Agents",
       "review": "进行评审",
+      "editResponse": "编辑作者回应",
       "results": "查看结果"
     },
     "startButton": "开始评审",
@@ -31,7 +32,6 @@
   },
   "agentConfig": {
     "title": "Agent 模型配置",
-    "maxIterations": "作者最大讨论轮数",
     "selectModel": "选择模型"
   },
   "venue": {
@@ -54,7 +54,7 @@
       "preparing": "准备阶段",
       "reviewing": "审稿阶段",
       "editing": "编辑汇总",
-      "discussing": "作者讨论",
+      "author_responding": "作者回应",
       "finalizing": "生成报告",
       "complete": "已完成",
       "error": "出错"
@@ -65,8 +65,7 @@
       "reviewer_2": "审稿人 2",
       "reviewer_3": "审稿人 3",
       "editor": "编辑",
-      "author_a": "作者 A",
-      "author_b": "作者 B",
+      "author": "作者",
       "finalize": "报告生成",
       "system": "系统"
     }
@@ -78,15 +77,24 @@
     "errorDetail": "错误详情",
     "viewOutput": "查看输出",
     "tabs": {
-      "editorSummary": "编辑汇总",
-      "discussions": "作者讨论（{{count}}条）",
+      "editorSummary": "第一轮编辑汇总",
+      "authorResponse": "作者修改方案",
+      "reviewsRound2": "第二轮评审",
+      "editorSummaryRound2": "第二轮编辑汇总",
       "finalReport": "最终修改报告"
     },
-    "noDiscussions": "暂无讨论记录",
     "noContent": "暂无内容",
     "downloadBtn": "下载 Markdown",
     "downloadZipBtn": "下载全部 (ZIP)",
     "roundLabel": "第{{round}}轮"
+  },
+  "authorEditor": {
+    "title": "编辑作者回应",
+    "editHint": "AI 已生成作者回应草稿，您可以在此编辑后提交给审稿人进行第二轮评审。",
+    "submitBtn": "提交至第二轮评审",
+    "resetBtn": "恢复 AI 原文",
+    "editMode": "编辑模式",
+    "previewMode": "预览模式"
   },
   "errors": {
     "startFailed": "启动失败",

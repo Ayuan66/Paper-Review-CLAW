@@ -6,6 +6,7 @@
       "upload": "Upload Paper",
       "configure": "Configure Agents",
       "review": "Review",
+      "editResponse": "Edit Author Response",
       "results": "View Results"
     },
     "startButton": "Start Review",
@@ -31,7 +32,6 @@
   },
   "agentConfig": {
     "title": "Agent Model Configuration",
-    "maxIterations": "Max Author Discussion Rounds",
     "selectModel": "Select model"
   },
   "venue": {
@@ -54,7 +54,7 @@
       "preparing": "Preparing",
       "reviewing": "Reviewing",
       "editing": "Editor Summary",
-      "discussing": "Author Discussion",
+      "author_responding": "Author Response",
       "finalizing": "Generating Report",
       "complete": "Complete",
       "error": "Error"
@@ -65,8 +65,7 @@
       "reviewer_2": "Reviewer 2",
       "reviewer_3": "Reviewer 3",
       "editor": "Editor",
-      "author_a": "Author A",
-      "author_b": "Author B",
+      "author": "Author",
       "finalize": "Finalize Report",
       "system": "System"
     }
@@ -78,15 +77,24 @@
     "errorDetail": "Error Details",
     "viewOutput": "View Output",
     "tabs": {
-      "editorSummary": "Editor Summary",
-      "discussions": "Author Discussions ({{count}})",
+      "editorSummary": "Round 1 Editor Summary",
+      "authorResponse": "Author Response",
+      "reviewsRound2": "Round 2 Reviews",
+      "editorSummaryRound2": "Round 2 Editor Summary",
       "finalReport": "Final Revision Report"
     },
-    "noDiscussions": "No discussion records yet",
     "noContent": "No content",
     "downloadBtn": "Download Markdown",
     "downloadZipBtn": "Download All (ZIP)",
     "roundLabel": "Round {{round}}"
+  },
+  "authorEditor": {
+    "title": "Edit Author Response",
+    "editHint": "The AI has drafted an author response. You may edit it before submitting to reviewers for a second round.",
+    "submitBtn": "Submit for Round 2 Review",
+    "resetBtn": "Reset to AI Draft",
+    "editMode": "Edit",
+    "previewMode": "Preview"
   },
   "errors": {
     "startFailed": "Failed to start",

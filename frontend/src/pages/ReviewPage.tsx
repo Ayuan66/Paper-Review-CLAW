@@ -27,6 +27,7 @@ import {
   startReview,
 } from "../api/client";
 import AgentConfig from "../components/AgentConfig";
+import AuthorResponseEditor from "../components/AuthorResponseEditor";
 import LanguageSwitcher from "../components/LanguageSwitcher";
 import PdfUpload from "../components/PdfUpload";
 import ProgressPanel from "../components/ProgressPanel";
@@ -40,7 +41,8 @@ function currentStep(status: string, sessionId: string | null): number {
   if (!sessionId) return 0;
   if (status === "idle") return 1;
   if (status === "running") return 2;
-  if (status === "complete") return 3;
+  if (status === "waiting_for_edit") return 3;
+  if (status === "complete") return 4;
   return 1;
 }
 
@@ -51,45 +53,33 @@ export default function ReviewPage() {
   const {
     sessionId,
     agentConfig,
-    maxIterations,
     venue,
     status,
     setStatus,
     addProgressEvent,
     setResults,
     setError,
+    setAuthorResponse,
     reset,
     error,
   } = useReviewStore();
 
-  const handleStart = async () => {
-    if (!sessionId) {
-      message.warning(t("page.noSession"));
-      return;
-    }
-    setStatus("running");
-    setError("");
-
-    try {
-      await startReview(sessionId, agentConfig, maxIterations, venue);
-    } catch (e: unknown) {
-      const msg = e instanceof Error ? e.message : t("errors.startFailed");
-      setStatus("error");
-      setError(msg);
-      message.error(msg);
-      return;
-    }
-
+  const connectAndListen = (sid: string) => {
     const es = connectSSE(
-      sessionId,
+      sid,
       (event) => addProgressEvent(event),
       async () => {
         esRef.current = null;
         try {
-          const results = await getResults(sessionId);
+          const results = await getResults(sid);
           setResults(results);
-          setStatus("complete");
-          message.success(t("page.startButton") + " ✓");
+          if (results.status === "waiting_for_author_edit") {
+            setAuthorResponse(results.author_response || "");
+            setStatus("waiting_for_edit");
+          } else {
+            setStatus("complete");
+            message.success(t("page.startButton") + " ✓");
+          }
         } catch {
           setStatus("error");
           setError(t("errors.fetchResultsFailed"));
@@ -102,6 +92,32 @@ export default function ReviewPage() {
       },
     );
     esRef.current = es;
+  };
+
+  const handleStart = async () => {
+    if (!sessionId) {
+      message.warning(t("page.noSession"));
+      return;
+    }
+    setStatus("running");
+    setError("");
+
+    try {
+      await startReview(sessionId, agentConfig, venue);
+    } catch (e: unknown) {
+      const msg = e instanceof Error ? e.message : t("errors.startFailed");
+      setStatus("error");
+      setError(msg);
+      message.error(msg);
+      return;
+    }
+
+    connectAndListen(sessionId);
+  };
+
+  const handlePhase2Start = () => {
+    if (!sessionId) return;
+    connectAndListen(sessionId);
   };
 
   const handleCancel = async () => {
@@ -131,12 +147,14 @@ export default function ReviewPage() {
   const step = currentStep(status, sessionId);
   const isRunning = status === "running";
   const isComplete = status === "complete";
-  const canStart = !!sessionId && !isRunning;
+  const isWaitingEdit = status === "waiting_for_edit";
+  const canStart = !!sessionId && !isRunning && !isWaitingEdit;
 
   const steps = [
     { title: t("page.steps.upload") },
     { title: t("page.steps.configure") },
     { title: t("page.steps.review") },
+    { title: t("page.steps.editResponse") },
     { title: t("page.steps.results") },
   ];
 
@@ -202,20 +220,22 @@ export default function ReviewPage() {
         {/* Action Buttons */}
         <div style={{ textAlign: "center" }}>
           <Space>
-            <Button
-              type="primary"
-              size="large"
-              onClick={handleStart}
-              loading={isRunning}
-              disabled={!canStart}
-              style={{ minWidth: 160 }}
-            >
-              {isRunning
-                ? t("page.startingButton")
-                : isComplete
-                  ? t("page.restartButton")
-                  : t("page.startButton")}
-            </Button>
+            {!isWaitingEdit && (
+              <Button
+                type="primary"
+                size="large"
+                onClick={handleStart}
+                loading={isRunning}
+                disabled={!canStart}
+                style={{ minWidth: 160 }}
+              >
+                {isRunning
+                  ? t("page.startingButton")
+                  : isComplete
+                    ? t("page.restartButton")
+                    : t("page.startButton")}
+              </Button>
+            )}
 
             {isRunning && (
               <Popconfirm
@@ -248,6 +268,37 @@ export default function ReviewPage() {
               </Button>
             )}
           </Space>
+        </div>
+
+        {error && (
+          <Alert
+            type="error"
+            message={error}
+            showIcon
+            closable
+            onClose={() => setError("")}
+          />
+        )}
+
+        {/* Author Response Editor (Phase 1 → Phase 2 transition) */}
+        {isWaitingEdit && (
+          <AuthorResponseEditor onSubmitted={handlePhase2Start} />
+        )}
+
+        <Divider style={{ margin: "8px 0" }} />
+
+        <Row gutter={16}>
+          <Col xs={24} md={10}>
+            <ProgressPanel />
+          </Col>
+          <Col xs={24} md={14}>
+            <ReviewResults />
+          </Col>
+        </Row>
+      </Space>
+    </div>
+  );
+}
         </div>
 
         {error && (

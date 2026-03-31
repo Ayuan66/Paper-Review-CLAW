@@ -1,12 +1,11 @@
 from datetime import datetime
-from typing import Literal
 
 from langgraph.graph import StateGraph, START, END
 
 from graph.state import ReviewState
 from agents.reviewer import make_reviewer_node
 from agents.editor import editor_node
-from agents.author import author_a_node, author_b_node, finalize_node
+from agents.author import author_node, finalize_node
 from llm.openrouter_client import OpenRouterClient
 from llm.venue_fetcher import get_venue_context
 
@@ -56,48 +55,57 @@ def prepare_node(state: ReviewState) -> dict:
         }
 
 
-def should_continue_discussion(state: ReviewState) -> Literal["continue", "stop"]:
-    if state.get("authors_reached_consensus", False):
-        return "stop"
-    if state.get("author_iteration", 0) >= state.get("max_author_iterations", 5):
-        return "stop"
-    return "continue"
-
-
-def build_review_graph():
+def build_phase1_graph():
+    """Phase 1: prepare → 3 reviewers (parallel) → editor → author → END"""
     graph = StateGraph(ReviewState)
 
-    # Nodes
     graph.add_node("prepare", prepare_node)
     graph.add_node("reviewer_1", make_reviewer_node("reviewer_1"))
     graph.add_node("reviewer_2", make_reviewer_node("reviewer_2"))
     graph.add_node("reviewer_3", make_reviewer_node("reviewer_3"))
     graph.add_node("editor", editor_node)
-    graph.add_node("author_a", author_a_node)
-    graph.add_node("author_b", author_b_node)
-    graph.add_node("finalize", finalize_node)
+    graph.add_node("author", author_node)
 
-    # START -> prepare (sequential, must finish before reviewers)
     graph.add_edge(START, "prepare")
 
-    # prepare -> fan-out to 3 reviewers in parallel
+    # prepare → fan-out to 3 reviewers in parallel
     graph.add_edge("prepare", "reviewer_1")
     graph.add_edge("prepare", "reviewer_2")
     graph.add_edge("prepare", "reviewer_3")
 
-    # fan-in -> editor
+    # fan-in → editor → author → END
     graph.add_edge("reviewer_1", "editor")
     graph.add_edge("reviewer_2", "editor")
     graph.add_edge("reviewer_3", "editor")
 
-    # editor -> author loop
-    graph.add_edge("editor", "author_a")
-    graph.add_edge("author_a", "author_b")
-    graph.add_conditional_edges(
-        "author_b",
-        should_continue_discussion,
-        {"continue": "author_a", "stop": "finalize"},
-    )
+    graph.add_edge("editor", "author")
+    graph.add_edge("author", END)
+
+    return graph.compile()
+
+
+def build_phase2_graph():
+    """Phase 2: 3 reviewers round2 (parallel) → editor round2 → finalize → END"""
+    graph = StateGraph(ReviewState)
+
+    graph.add_node("reviewer_1", make_reviewer_node("reviewer_1"))
+    graph.add_node("reviewer_2", make_reviewer_node("reviewer_2"))
+    graph.add_node("reviewer_3", make_reviewer_node("reviewer_3"))
+    graph.add_node("editor", editor_node)
+    graph.add_node("finalize", finalize_node)
+
+    # All 3 reviewers start in parallel
+    graph.add_edge(START, "reviewer_1")
+    graph.add_edge(START, "reviewer_2")
+    graph.add_edge(START, "reviewer_3")
+
+    # fan-in → editor → finalize → END
+    graph.add_edge("reviewer_1", "editor")
+    graph.add_edge("reviewer_2", "editor")
+    graph.add_edge("reviewer_3", "editor")
+
+    graph.add_edge("editor", "finalize")
     graph.add_edge("finalize", END)
 
     return graph.compile()
+

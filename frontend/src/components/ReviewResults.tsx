@@ -2,7 +2,6 @@ import {
   DownloadOutlined,
   EditOutlined,
   FileTextOutlined,
-  MessageOutlined,
   UserOutlined,
 } from "@ant-design/icons";
 import {
@@ -37,6 +36,7 @@ export default function ReviewResults() {
     );
   }
 
+  // Round 1 reviewer tabs
   const reviewItems = (results.reviews || []).map((r) => ({
     key: r.agent_name,
     label: (
@@ -55,24 +55,29 @@ export default function ReviewResults() {
     ),
   }));
 
-  const discussionItems = (results.author_discussions || []).map((d, idx) => ({
-    key: String(idx),
+  // Round 2 reviewer tabs
+  const reviewItems2 = (results.reviews_round2 || []).map((r) => ({
+    key: `r2_${r.agent_name}`,
     label: (
-      <Tag color={d.author === "author_a" ? "blue" : "green"}>
-        {t(`progress.agents.${d.author}`)} ·{" "}
-        {t("results.roundLabel", { round: d.round })}
-      </Tag>
+      <span>
+        <UserOutlined style={{ marginRight: 4 }} />
+        {t(`progress.agents.${r.agent_name}`, { defaultValue: r.agent_name })}
+      </span>
     ),
     children: (
       <div>
-        <Tag style={{ marginBottom: 8 }}>{d.model}</Tag>
-        <MarkdownViewer content={d.content} />
+        <Tag color="purple" style={{ marginBottom: 8 }}>
+          {r.model}
+        </Tag>
+        <MarkdownViewer content={r.content} />
       </div>
     ),
   }));
 
   const tabItems = [
+    // Round 1 reviews
     ...reviewItems,
+    // Round 1 editor summary
     {
       key: "editor",
       label: (
@@ -83,23 +88,62 @@ export default function ReviewResults() {
       ),
       children: <MarkdownViewer content={results.editor_summary} />,
     },
-    {
-      key: "discussions",
-      label: (
-        <span>
-          <MessageOutlined style={{ marginRight: 4 }} />
-          {t("results.tabs.discussions", {
-            count: results.author_discussions?.length ?? 0,
-          })}
-        </span>
-      ),
-      children:
-        results.author_discussions?.length > 0 ? (
-          <Tabs tabPosition="left" size="small" items={discussionItems} />
-        ) : (
-          <Empty description={t("results.noDiscussions")} />
-        ),
-    },
+    // Author response
+    ...(results.author_response
+      ? [
+          {
+            key: "author_response",
+            label: (
+              <span>
+                <UserOutlined style={{ marginRight: 4 }} />
+                {t("results.tabs.authorResponse")}
+              </span>
+            ),
+            children: (
+              <MarkdownViewer
+                content={
+                  results.author_response_edited || results.author_response
+                }
+              />
+            ),
+          },
+        ]
+      : []),
+    // Round 2 reviews
+    ...(reviewItems2.length > 0
+      ? [
+          {
+            key: "reviews_round2",
+            label: (
+              <span>
+                <UserOutlined style={{ marginRight: 4 }} />
+                {t("results.tabs.reviewsRound2")}
+              </span>
+            ),
+            children: (
+              <Tabs tabPosition="left" size="small" items={reviewItems2} />
+            ),
+          },
+        ]
+      : []),
+    // Round 2 editor summary
+    ...(results.editor_summary_round2
+      ? [
+          {
+            key: "editor_round2",
+            label: (
+              <span>
+                <EditOutlined style={{ marginRight: 4 }} />
+                {t("results.tabs.editorSummaryRound2")}
+              </span>
+            ),
+            children: (
+              <MarkdownViewer content={results.editor_summary_round2} />
+            ),
+          },
+        ]
+      : []),
+    // Final report
     {
       key: "final",
       label: (

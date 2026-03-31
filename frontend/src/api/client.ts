@@ -20,13 +20,20 @@ export async function uploadPdf(
 export async function startReview(
   sessionId: string,
   agentConfig: Record<string, string>,
-  maxIterations = 5,
   venue = "",
 ): Promise<void> {
   await http.post(`/sessions/${sessionId}/start`, {
     agent_config: agentConfig,
-    max_iterations: maxIterations,
     venue,
+  });
+}
+
+export async function submitAuthorResponse(
+  sessionId: string,
+  editedContent: string,
+): Promise<void> {
+  await http.post(`/sessions/${sessionId}/submit-author-response`, {
+    author_response_edited: editedContent,
   });
 }
 

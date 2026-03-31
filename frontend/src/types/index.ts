@@ -4,18 +4,11 @@ export interface Review {
   content: string;
 }
 
-export interface AuthorDiscussion {
-  round: number;
-  author: 'author_a' | 'author_b';
-  model: string;
-  content: string;
-}
-
 export interface ProgressEvent {
-  type: 'start' | 'complete' | 'error';
+  type: "start" | "complete" | "error";
   agent: string;
   phase: string;
-  preview: string;   // short preview text shown in progress panel
+  preview: string; // short preview text shown in progress panel
   timestamp: string;
 }
 
@@ -26,7 +19,10 @@ export interface SessionResults {
   agent_config: Record<string, string>;
   reviews: Review[];
   editor_summary: string;
-  author_discussions: AuthorDiscussion[];
+  author_response: string;
+  author_response_edited: string;
+  reviews_round2: Review[];
+  editor_summary_round2: string;
   final_markdown: string;
   created_at: string;
 }
@@ -45,7 +41,13 @@ export interface ModelsResponse {
 export interface VenueOption {
   id: string;
   name: string;
-  type: 'conference' | 'journal';
+  type: "conference" | "journal";
 }
 
-export type ReviewStatus = 'idle' | 'uploading' | 'running' | 'complete' | 'error';
+export type ReviewStatus =
+  | "idle"
+  | "uploading"
+  | "running"
+  | "waiting_for_edit"
+  | "complete"
+  | "error";

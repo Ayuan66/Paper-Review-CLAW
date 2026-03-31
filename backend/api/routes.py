@@ -12,11 +12,10 @@ from config import (
     AGENT_ROLES,
     AVAILABLE_MODELS,
     DEFAULT_MODELS,
-    MAX_AUTHOR_ITERATIONS,
     UPLOADS_DIR,
     VENUES,
 )
-from graph.workflow import build_review_graph
+from graph.workflow import build_phase1_graph, build_phase2_graph
 from llm.pdf_extractor import extract_from_base64
 from models.review_session import ReviewSession
 
@@ -55,7 +54,7 @@ def upload_pdf():
 
 
 # ---------------------------------------------------------------------------
-# Start review process
+# Start review process (Phase 1)
 # ---------------------------------------------------------------------------
 @api_bp.route("/sessions/<session_id>/start", methods=["POST"])
 def start_review(session_id: str):
@@ -69,11 +68,20 @@ def start_review(session_id: str):
 
     body = request.get_json(silent=True) or {}
     agent_config = body.get("agent_config", DEFAULT_MODELS.copy())
-    max_iterations = int(body.get("max_iterations", MAX_AUTHOR_ITERATIONS))
     venue = body.get("venue", "")  # e.g. "ICSE", "TSE", or ""
 
     session.agent_config = agent_config
+    session.venue = venue
     session.status = "reviewing"
+    # Reset any previous results when restarting
+    session.reviews = []
+    session.editor_summary = ""
+    session.author_response = ""
+    session.author_response_edited = ""
+    session.reviews_round2 = []
+    session.editor_summary_round2 = ""
+    session.final_markdown = ""
+    session.error = ""
     session.save()
 
     # Read PDF, base64-encode, extract text + render page images
@@ -91,12 +99,13 @@ def start_review(session_id: str):
         "agent_config": agent_config,
         "venue": venue,
         "venue_context": "",  # filled by prepare_node
+        "review_round": 1,
         "reviews": [],
         "editor_summary": "",
-        "author_discussions": [],
-        "author_iteration": 0,
-        "max_author_iterations": max_iterations,
-        "authors_reached_consensus": False,
+        "author_response": "",
+        "author_response_edited": "",
+        "reviews_round2": [],
+        "editor_summary_round2": "",
         "final_revision_markdown": "",
         "current_phase": "reviewing",
         "progress_events": [],
@@ -107,12 +116,77 @@ def start_review(session_id: str):
 
     thread = threading.Thread(
         target=_run_workflow,
-        args=(session_id, initial_state, q),
+        args=(session_id, initial_state, q, 1),
         daemon=True,
     )
     thread.start()
 
     return jsonify({"status": "started"})
+
+
+# ---------------------------------------------------------------------------
+# Submit user-edited author response and start Phase 2
+# ---------------------------------------------------------------------------
+@api_bp.route("/sessions/<session_id>/submit-author-response", methods=["POST"])
+def submit_author_response(session_id: str):
+    try:
+        session = ReviewSession.load(session_id)
+    except FileNotFoundError:
+        return jsonify({"error": "会话不存在"}), 404
+
+    if session.status != "waiting_for_author_edit":
+        return jsonify({"error": f"当前状态 {session.status} 不允许提交修改意见"}), 400
+
+    body = request.get_json(silent=True) or {}
+    edited_response = body.get("author_response", "").strip()
+    if not edited_response:
+        return jsonify({"error": "修改意见不能为空"}), 400
+
+    session.author_response_edited = edited_response
+    session.status = "reviewing"
+    session.reviews_round2 = []
+    session.editor_summary_round2 = ""
+    session.final_markdown = ""
+    session.save()
+
+    # Re-read and re-extract PDF
+    with open(session.pdf_path, "rb") as f:
+        pdf_bytes = f.read()
+    pdf_base64 = base64.b64encode(pdf_bytes).decode("utf-8")
+    _pdf_bytes, pdf_text, page_images = extract_from_base64(pdf_base64)
+
+    phase2_state = {
+        "session_id": session_id,
+        "pdf_base64": pdf_base64,
+        "pdf_filename": session.pdf_filename,
+        "pdf_text": pdf_text,
+        "pdf_page_images": page_images,
+        "agent_config": session.agent_config,
+        "venue": session.venue,
+        "venue_context": session.venue_context,
+        "review_round": 2,
+        "reviews": session.reviews,
+        "editor_summary": session.editor_summary,
+        "author_response": session.author_response,
+        "author_response_edited": edited_response,
+        "reviews_round2": [],
+        "editor_summary_round2": "",
+        "final_revision_markdown": "",
+        "current_phase": "reviewing",
+        "progress_events": [],
+    }
+
+    q: queue.Queue = queue.Queue()
+    _session_queues[session_id] = q
+
+    thread = threading.Thread(
+        target=_run_workflow,
+        args=(session_id, phase2_state, q, 2),
+        daemon=True,
+    )
+    thread.start()
+
+    return jsonify({"status": "phase2_started"})
 
 
 # ---------------------------------------------------------------------------
@@ -226,7 +300,10 @@ def get_results(session_id: str):
         "agent_config": session.agent_config,
         "reviews": session.reviews,
         "editor_summary": session.editor_summary,
-        "author_discussions": session.author_discussions,
+        "author_response": session.author_response,
+        "author_response_edited": session.author_response_edited,
+        "reviews_round2": session.reviews_round2,
+        "editor_summary_round2": session.editor_summary_round2,
         "final_markdown": session.final_markdown,
         "created_at": session.created_at,
     })
@@ -288,18 +365,30 @@ def download_zip(session_id: str):
 
         # Editor summary
         if session.editor_summary:
-            md = f"# Editor Summary\n\n{session.editor_summary}"
-            zf.writestr("editor_summary.md", md.encode("utf-8"))
+            md = f"# Editor Summary (Round 1)\n\n{session.editor_summary}"
+            zf.writestr("editor_summary_round1.md", md.encode("utf-8"))
 
-        # Author discussions
-        if session.author_discussions:
-            lines = ["# Author Discussions\n"]
-            for d in session.author_discussions:
-                author = d.get("author", "")
-                round_num = d.get("round", "")
-                content = d.get("content", "")
-                lines.append(f"## Round {round_num} — {author}\n\n{content}\n")
-            zf.writestr("author_discussions.md", "\n".join(lines).encode("utf-8"))
+        # Author response
+        if session.author_response_edited or session.author_response:
+            response_text = session.author_response_edited or session.author_response
+            edited_note = " (User Edited)" if session.author_response_edited else " (AI Generated)"
+            md = f"# Author Response{edited_note}\n\n{response_text}"
+            zf.writestr("author_response.md", md.encode("utf-8"))
+
+        # Editor summary round 2
+        if session.editor_summary_round2:
+            md = f"# Editor Summary (Round 2)\n\n{session.editor_summary_round2}"
+            zf.writestr("editor_summary_round2.md", md.encode("utf-8"))
+
+        # Author discussions (legacy - round 2 reviews)
+        if session.reviews_round2:
+            lines = ["# Round 2 Reviews\n"]
+            for r in session.reviews_round2:
+                agent = r.get("agent_name", "reviewer")
+                model = r.get("model", "")
+                content = r.get("content", "")
+                lines.append(f"## {agent} (Round 2)\n\n**Model**: `{model}`\n\n---\n\n{content}\n")
+            zf.writestr("reviews_round2.md", "\n".join(lines).encode("utf-8"))
 
         # Final revision report
         if session.final_markdown:
@@ -355,24 +444,28 @@ def get_venues():
 # ---------------------------------------------------------------------------
 # Background workflow runner
 # ---------------------------------------------------------------------------
-def _run_workflow(session_id: str, initial_state: dict, q: queue.Queue):
+def _run_workflow(session_id: str, initial_state: dict, q: queue.Queue, phase: int = 1):
     try:
-        graph = build_review_graph()
+        graph = build_phase1_graph() if phase == 1 else build_phase2_graph()
         session = ReviewSession.load(session_id)
 
         for chunk in graph.stream(initial_state, stream_mode="updates"):
             # chunk: {node_name: state_update_dict}
             for node_name, update in chunk.items():
                 # Persist incremental results
-                _apply_update_to_session(session, node_name, update)
+                _apply_update_to_session(session, node_name, update, phase)
                 session.save()
 
                 # Push progress events to SSE queue
                 for event in update.get("progress_events", []):
                     q.put(event)
 
-        # Mark complete
-        session.status = "complete"
+        # Phase 1 complete: wait for user to edit author response
+        # Phase 2 complete: fully done
+        if phase == 1:
+            session.status = "waiting_for_author_edit"
+        else:
+            session.status = "complete"
         session.save()
 
     except Exception as e:
@@ -394,16 +487,24 @@ def _run_workflow(session_id: str, initial_state: dict, q: queue.Queue):
         q.put(None)  # sentinel
 
 
-def _apply_update_to_session(session: ReviewSession, node_name: str, update: dict):
+def _apply_update_to_session(session: ReviewSession, node_name: str, update: dict, phase: int = 1):
     """Merge a LangGraph state update into the persistent session object."""
+    if "venue_context" in update and update["venue_context"]:
+        session.venue_context = update["venue_context"]
     if "reviews" in update:
         session.reviews.extend(update["reviews"])
+        session.status = "reviewing"
+    if "reviews_round2" in update:
+        session.reviews_round2.extend(update["reviews_round2"])
         session.status = "reviewing"
     if "editor_summary" in update and update["editor_summary"]:
         session.editor_summary = update["editor_summary"]
         session.status = "editing"
-    if "author_discussions" in update:
-        session.author_discussions.extend(update["author_discussions"])
-        session.status = "discussing"
+    if "editor_summary_round2" in update and update["editor_summary_round2"]:
+        session.editor_summary_round2 = update["editor_summary_round2"]
+        session.status = "editing"
+    if "author_response" in update and update["author_response"]:
+        session.author_response = update["author_response"]
+        session.status = "author_responding"
     if "final_revision_markdown" in update and update["final_revision_markdown"]:
         session.final_markdown = update["final_revision_markdown"]
