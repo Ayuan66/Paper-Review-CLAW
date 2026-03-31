@@ -3,7 +3,7 @@ from llm.openrouter_client import OpenRouterClient
 from agents.prompts import (
     build_reviewer_system_prompt,
     REVIEWER_USER_PROMPT,
-    REVIEWER_SECOND_ROUND_USER_PROMPT_PREFIX,
+    REVIEWER_SECOND_ROUND_USER_TEMPLATE,
 )
 from graph.state import ReviewState
 
@@ -39,7 +39,7 @@ def make_reviewer_node(agent_key: str):
                     state.get("author_response_edited")
                     or state.get("author_response", "")
                 )
-                user_prompt = REVIEWER_SECOND_ROUND_USER_PROMPT_PREFIX.format(
+                user_prompt = REVIEWER_SECOND_ROUND_USER_TEMPLATE.format(
                     author_response=author_response
                 )
             else:

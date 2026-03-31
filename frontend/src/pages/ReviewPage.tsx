@@ -299,29 +299,3 @@ export default function ReviewPage() {
     </div>
   );
 }
-        </div>
-
-        {error && (
-          <Alert
-            type="error"
-            message={error}
-            showIcon
-            closable
-            onClose={() => setError("")}
-          />
-        )}
-
-        <Divider style={{ margin: "8px 0" }} />
-
-        <Row gutter={16}>
-          <Col xs={24} md={10}>
-            <ProgressPanel />
-          </Col>
-          <Col xs={24} md={14}>
-            <ReviewResults />
-          </Col>
-        </Row>
-      </Space>
-    </div>
-  );
-}
