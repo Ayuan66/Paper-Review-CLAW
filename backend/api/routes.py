@@ -138,7 +138,7 @@ def submit_author_response(session_id: str):
         return jsonify({"error": f"当前状态 {session.status} 不允许提交修改意见"}), 400
 
     body = request.get_json(silent=True) or {}
-    edited_response = body.get("author_response", "").strip()
+    edited_response = body.get("author_response_edited", "").strip()
     if not edited_response:
         return jsonify({"error": "修改意见不能为空"}), 400
 

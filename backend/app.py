@@ -2,12 +2,14 @@ import os
 from flask import Flask
 from flask_cors import CORS
 from api.routes import api_bp
+from api.idea_routes import idea_bp
 from config import FLASK_DEBUG, UPLOADS_DIR, SESSIONS_DIR
 
 app = Flask(__name__)
 CORS(app, resources={r"/api/*": {"origins": "*"}})
 
 app.register_blueprint(api_bp)
+app.register_blueprint(idea_bp)
 
 # Ensure storage dirs exist on startup
 os.makedirs(UPLOADS_DIR, exist_ok=True)

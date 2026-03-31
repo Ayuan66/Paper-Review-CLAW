@@ -1,8 +1,9 @@
-import { App as AntApp, ConfigProvider, theme as antTheme } from "antd";
+import { App as AntApp, ConfigProvider, Tabs, theme as antTheme } from "antd";
 import enUS from "antd/locale/en_US";
 import jaJP from "antd/locale/ja_JP";
 import zhCN from "antd/locale/zh_CN";
 import { useTranslation } from "react-i18next";
+import IdeaPage from "./pages/IdeaPage";
 import ReviewPage from "./pages/ReviewPage";
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -13,7 +14,7 @@ const ANT_LOCALES: Record<string, any> = {
 };
 
 export default function App() {
-  const { i18n } = useTranslation();
+  const { i18n, t } = useTranslation();
   const antLocale = ANT_LOCALES[i18n.language] ?? zhCN;
 
   return (
@@ -29,7 +30,23 @@ export default function App() {
       }}
     >
       <AntApp>
-        <ReviewPage />
+        <Tabs
+          defaultActiveKey="review"
+          size="large"
+          style={{ padding: "0 16px" }}
+          items={[
+            {
+              key: "review",
+              label: t("app.tab.review"),
+              children: <ReviewPage />,
+            },
+            {
+              key: "idea",
+              label: t("app.tab.idea"),
+              children: <IdeaPage />,
+            },
+          ]}
+        />
       </AntApp>
     </ConfigProvider>
   );

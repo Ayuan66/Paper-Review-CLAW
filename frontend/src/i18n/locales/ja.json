@@ -101,5 +101,60 @@
     "connectionLost": "接続が切断されました：{{msg}}",
     "fetchResultsFailed": "結果の取得に失敗しました",
     "cancelledByUser": "ユーザーによりキャンセルされました"
+  },
+  "app": {
+    "tab": {
+      "review": "論文査読",
+      "idea": "研究アイデア"
+    }
+  },
+  "idea": {
+    "page": {
+      "title": "Research Idea CLAW",
+      "subtitle": "マルチエージェントAI研究アイデア議論システム",
+      "complete": "議論が完了しました",
+      "fetchResultsFailed": "結果の取得に失敗しました",
+      "connectionLost": "接続が切断されました：{{msg}}"
+    },
+    "input": {
+      "title": "研究課題入力",
+      "questionLabel": "研究課題 / アイデア",
+      "questionPlaceholder": "例：大規模言語モデルはコードレビューの効率をどのように向上できるか？",
+      "contextLabel": "背景情報（任意）",
+      "contextPlaceholder": "研究背景、先行研究、注目している方向性などを記述してください…",
+      "maxRounds": "最大議論ラウンド数",
+      "agentConfig": "エージェントモデル設定",
+      "start": "議論開始",
+      "starting": "議論中…",
+      "questionRequired": "先に研究課題を入力してください"
+    },
+    "agents": {
+      "innovation_expert": "革新性評価者",
+      "feasibility_analyst": "実現可能性分析者",
+      "methodology_expert": "方法論専門家",
+      "summarizer": "要約者",
+      "system": "システム"
+    },
+    "discussion": {
+      "title": "議論過程",
+      "titleCount": "議論過程（{{count}}件）",
+      "empty": "議論開始後、各エージェントの分析と議論がリアルタイムに表示されます",
+      "roundStart": "第{{round}}ラウンド開始",
+      "roundComplete": "第{{round}}ラウンド完了 — 修正をお待ちしています…",
+      "agentQuestion": "（エージェントからの質問）"
+    },
+    "question": {
+      "title": "{{agent}} からの質問",
+      "answerPlaceholder": "回答を入力してください…",
+      "submit": "回答を送信"
+    },
+    "revision": {
+      "title": "第{{round}}ラウンドまとめ — 研究課題を修正してください",
+      "summaryLabel": "今ラウンドのまとめ：",
+      "questionLabel": "研究課題",
+      "contextLabel": "背景情報",
+      "continue": "次のラウンドへ",
+      "finish": "議論を終了"
+    }
   }
 }

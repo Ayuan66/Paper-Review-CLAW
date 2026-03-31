@@ -101,5 +101,60 @@
     "connectionLost": "连接中断：{{msg}}",
     "fetchResultsFailed": "获取结果失败",
     "cancelledByUser": "已手动取消"
+  },
+  "app": {
+    "tab": {
+      "review": "论文评审",
+      "idea": "研究创意"
+    }
+  },
+  "idea": {
+    "page": {
+      "title": "Research Idea CLAW",
+      "subtitle": "多Agent AI研究创意讨论与打磨系统",
+      "complete": "讨论已完成",
+      "fetchResultsFailed": "获取结果失败",
+      "connectionLost": "连接中断：{{msg}}"
+    },
+    "input": {
+      "title": "研究问题输入",
+      "questionLabel": "研究问题 / 想法",
+      "questionPlaceholder": "例：如何利用大语言模型提升代码审查效率？",
+      "contextLabel": "背景说明（可选）",
+      "contextPlaceholder": "描述您的研究背景、已有工作、关注的方向等…",
+      "maxRounds": "最大讨论轮数",
+      "agentConfig": "Agent 模型配置",
+      "start": "开始讨论",
+      "starting": "讨论进行中…",
+      "questionRequired": "请先输入研究问题"
+    },
+    "agents": {
+      "innovation_expert": "创新性评估者",
+      "feasibility_analyst": "可行性分析师",
+      "methodology_expert": "方法论专家",
+      "summarizer": "总结者",
+      "system": "系统"
+    },
+    "discussion": {
+      "title": "讨论过程",
+      "titleCount": "讨论过程（{{count}} 条）",
+      "empty": "讨论开始后将在此实时显示各Agent的分析与交流",
+      "roundStart": "第 {{round}} 轮讨论开始",
+      "roundComplete": "第 {{round}} 轮讨论完成，等待修订…",
+      "agentQuestion": "（Agent 提问）"
+    },
+    "question": {
+      "title": "{{agent}} 向您提问",
+      "answerPlaceholder": "请输入您的回答…",
+      "submit": "提交回答"
+    },
+    "revision": {
+      "title": "第 {{round}} 轮总结 — 请修订研究问题",
+      "summaryLabel": "本轮总结：",
+      "questionLabel": "研究问题",
+      "contextLabel": "背景说明",
+      "continue": "继续下一轮",
+      "finish": "结束讨论"
+    }
   }
 }

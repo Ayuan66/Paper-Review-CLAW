@@ -101,5 +101,60 @@
     "connectionLost": "Connection lost: {{msg}}",
     "fetchResultsFailed": "Failed to fetch results",
     "cancelledByUser": "Cancelled by user"
+  },
+  "app": {
+    "tab": {
+      "review": "Paper Review",
+      "idea": "Research Idea"
+    }
+  },
+  "idea": {
+    "page": {
+      "title": "Research Idea CLAW",
+      "subtitle": "Multi-Agent AI Research Idea Discussion System",
+      "complete": "Discussion complete",
+      "fetchResultsFailed": "Failed to fetch results",
+      "connectionLost": "Connection lost: {{msg}}"
+    },
+    "input": {
+      "title": "Research Question Input",
+      "questionLabel": "Research Question / Idea",
+      "questionPlaceholder": "e.g. How can large language models improve code review efficiency?",
+      "contextLabel": "Background (optional)",
+      "contextPlaceholder": "Describe your research background, prior work, focus areas…",
+      "maxRounds": "Max Discussion Rounds",
+      "agentConfig": "Agent Model Configuration",
+      "start": "Start Discussion",
+      "starting": "Discussing…",
+      "questionRequired": "Please enter a research question first"
+    },
+    "agents": {
+      "innovation_expert": "Innovation Expert",
+      "feasibility_analyst": "Feasibility Analyst",
+      "methodology_expert": "Methodology Expert",
+      "summarizer": "Summarizer",
+      "system": "System"
+    },
+    "discussion": {
+      "title": "Discussion",
+      "titleCount": "Discussion ({{count}})",
+      "empty": "Agent analysis and discussion will appear here in real time",
+      "roundStart": "Round {{round}} started",
+      "roundComplete": "Round {{round}} complete — waiting for revision…",
+      "agentQuestion": "(Agent question)"
+    },
+    "question": {
+      "title": "{{agent}} asks you",
+      "answerPlaceholder": "Type your answer…",
+      "submit": "Submit Answer"
+    },
+    "revision": {
+      "title": "Round {{round}} Summary — Please revise your idea",
+      "summaryLabel": "This round's summary:",
+      "questionLabel": "Research Question",
+      "contextLabel": "Background",
+      "continue": "Continue to Next Round",
+      "finish": "End Discussion"
+    }
   }
 }
