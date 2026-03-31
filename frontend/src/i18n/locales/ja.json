@@ -111,7 +111,7 @@
   "idea": {
     "page": {
       "title": "Research Idea CLAW",
-      "subtitle": "マルチエージェントAI研究アイデア議論システム",
+      "subtitle": "マルチエージェントAI円卓議論システム",
       "complete": "議論が完了しました",
       "fetchResultsFailed": "結果の取得に失敗しました",
       "connectionLost": "接続が切断されました：{{msg}}",
@@ -125,6 +125,7 @@
       "cancelConfirmCancel": "待機を続ける",
       "restart": "最初からやり直す",
       "resetButton": "リセット",
+      "downloadButton": "議論記録をダウンロード",
       "cancelledByUser": "ユーザーによりキャンセルされました"
     },
     "steps": {
@@ -155,7 +156,7 @@
     "discussion": {
       "title": "議論過程",
       "titleCount": "議論過程（{{count}}件）",
-      "empty": "議論開始後、各エージェントの分析と議論がリアルタイムに表示されます",
+      "empty": "議論開始後、専門家の円卓議論がリアルタイムに表示されます",
       "roundStart": "第{{round}}ラウンド開始",
       "roundComplete": "第{{round}}ラウンド完了 — 修正をお待ちしています…",
       "agentQuestion": "（エージェントからの質問）",

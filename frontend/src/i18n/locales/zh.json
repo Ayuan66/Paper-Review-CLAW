@@ -111,7 +111,7 @@
   "idea": {
     "page": {
       "title": "Research Idea CLAW",
-      "subtitle": "多Agent AI研究创意讨论与打磨系统",
+      "subtitle": "多Agent AI圆桌讨论与研究创意打磨系统",
       "complete": "讨论已完成",
       "fetchResultsFailed": "获取结果失败",
       "connectionLost": "连接中断：{{msg}}",
@@ -125,6 +125,7 @@
       "cancelConfirmCancel": "继续等待",
       "restart": "重新开始",
       "resetButton": "重置",
+      "downloadButton": "下载讨论记录",
       "cancelledByUser": "已手动取消"
     },
     "steps": {
@@ -155,7 +156,7 @@
     "discussion": {
       "title": "讨论过程",
       "titleCount": "讨论过程（{{count}} 条）",
-      "empty": "讨论开始后将在此实时显示各Agent的分析与交流",
+      "empty": "讨论开始后将在此实时显示专家圆桌讨论过程",
       "roundStart": "第 {{round}} 轮讨论开始",
       "roundComplete": "第 {{round}} 轮讨论完成，等待修订…",
       "agentQuestion": "（Agent 提问）",

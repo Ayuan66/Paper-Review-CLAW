@@ -1,5 +1,6 @@
 import {
   BulbOutlined,
+  DownloadOutlined,
   ReloadOutlined,
   RocketOutlined,
   StopOutlined,
@@ -23,6 +24,7 @@ import { useTranslation } from "react-i18next";
 import {
   cancelIdea,
   connectIdeaSSE,
+  downloadIdeaMarkdown,
   getIdeaResults,
   startIdeaDiscussion,
 } from "../api/ideaClient";
@@ -273,6 +275,16 @@ export default function IdeaPage() {
                 onClick={handleReset}
               >
                 {t("idea.page.resetButton")}
+              </Button>
+            )}
+
+            {sessionId && (isComplete || isWaitingRevision) && (
+              <Button
+                size="large"
+                icon={<DownloadOutlined />}
+                onClick={() => downloadIdeaMarkdown(sessionId)}
+              >
+                {t("idea.page.downloadButton")}
               </Button>
             )}
           </Space>

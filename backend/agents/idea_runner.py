@@ -2,8 +2,12 @@
 Core runner for Research Idea CLAW discussions.
 Uses an imperative loop (not LangGraph) to support real-time interrupts.
 
+ROUND-TABLE MODE: Experts speak sequentially within each round.
+Each expert can see what the previous experts said in the current round.
+
 Flow per round:
-  1. For each of 3 agents: call LLM → detect [ASK_USER] → block on answer_queue if needed
+  1. For each of 3 agents *sequentially*: call LLM (with current-round context)
+     → detect [ASK_USER] → block on answer_queue if needed
   2. Summarizer: aggregate expert outputs → produce round summary
   3. Push round_complete event → set status=waiting_for_revision
   4. Block on answer_queue for user-revised idea or 'done' signal
@@ -63,7 +67,7 @@ def _make_event(event_type: str, agent: str, role: str, content: str, **extra) -
 
 
 def _build_discussion_history(discussions: list, round_num: int | None = None) -> str:
-    """Format previous discussions for prompt context."""
+    """Format previous rounds' discussions for prompt context."""
     if not discussions:
         return "（本轮是第一轮讨论）"
     lines = []
@@ -72,6 +76,18 @@ def _build_discussion_history(discussions: list, round_num: int | None = None) -
             continue
         lines.append(f"**第{d['round']}轮 - {d['role']}（{d['agent']}）**:\n{d['content']}\n")
     return "\n".join(lines) if lines else "（暂无历史讨论）"
+
+
+def _build_current_round_messages(round_messages: list[tuple[str, str, str]]) -> str:
+    """Format messages from experts who have already spoken in this round.
+    Each item is (agent_key, agent_role, content).
+    """
+    if not round_messages:
+        return "（你是本轮第一位发言的专家）"
+    lines = []
+    for _agent_key, role, content in round_messages:
+        lines.append(f"### {role} 的发言\n\n{content}\n")
+    return "\n".join(lines)
 
 
 def _build_user_answers_block(user_answers: list, round_num: int) -> str:
@@ -135,9 +151,11 @@ def run_idea_discussion(
             ))
 
             round_expert_outputs: list[str] = []
+            # Track messages from experts who already spoke in this round
+            current_round_msgs: list[tuple[str, str, str]] = []
 
             # -----------------------------------------------------------
-            # Each expert agent
+            # Each expert agent — SEQUENTIAL round-table order
             # -----------------------------------------------------------
             for agent_key, agent_role, system_prompt in AGENTS:
                 model = agent_config.get(agent_key, DEFAULT_MODEL)
@@ -153,12 +171,14 @@ def run_idea_discussion(
                 )
                 discussion_history = _build_discussion_history(session.discussions, round_num)
                 user_answers_block = _build_user_answers_block(session.user_answers, round_num)
+                current_round_text = _build_current_round_messages(current_round_msgs)
 
                 user_prompt = AGENT_USER_TEMPLATE.format(
                     research_question=session.research_question,
                     user_context_block=user_context_block,
                     search_results=search_text,
                     discussion_history=discussion_history,
+                    current_round_messages=current_round_text,
                     user_answers_block=user_answers_block,
                 )
 
@@ -234,6 +254,7 @@ def run_idea_discussion(
                         user_context_block=user_context_block,
                         search_results=search_text,
                         discussion_history=discussion_history,
+                        current_round_messages=current_round_text,
                         user_answers_block=updated_answers_block,
                     )
                     content = _client.chat(
@@ -255,6 +276,8 @@ def run_idea_discussion(
                 })
                 session.save()
                 round_expert_outputs.append(f"### {agent_role}\n\n{content}")
+                # Track for next expert in this round
+                current_round_msgs.append((agent_key, agent_role, content))
 
                 _push(event_queue, _make_event(
                     "complete", agent_key, agent_role, content,

@@ -111,7 +111,7 @@
   "idea": {
     "page": {
       "title": "Research Idea CLAW",
-      "subtitle": "Multi-Agent AI Research Idea Discussion System",
+      "subtitle": "Multi-Agent AI Roundtable Discussion System",
       "complete": "Discussion complete",
       "fetchResultsFailed": "Failed to fetch results",
       "connectionLost": "Connection lost: {{msg}}",
@@ -125,6 +125,7 @@
       "cancelConfirmCancel": "Keep Waiting",
       "restart": "Restart",
       "resetButton": "Reset",
+      "downloadButton": "Download Discussion",
       "cancelledByUser": "Cancelled by user"
     },
     "steps": {
@@ -155,7 +156,7 @@
     "discussion": {
       "title": "Discussion",
       "titleCount": "Discussion ({{count}})",
-      "empty": "Agent analysis and discussion will appear here in real time",
+      "empty": "Expert roundtable discussion will appear here in real time",
       "roundStart": "Round {{round}} started",
       "roundComplete": "Round {{round}} complete — waiting for revision…",
       "agentQuestion": "(Agent question)",

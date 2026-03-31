@@ -46,6 +46,10 @@ export async function cancelIdea(sessionId: string): Promise<void> {
   await http.post(`/sessions/${sessionId}/cancel`);
 }
 
+export function downloadIdeaMarkdown(sessionId: string): void {
+  window.open(`/api/idea/sessions/${sessionId}/download`, "_blank");
+}
+
 export function connectIdeaSSE(
   sessionId: string,
   onEvent: (event: IdeaProgressEvent) => void,
